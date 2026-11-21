@@ -1,0 +1,77 @@
+:root {
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-muted: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --accent-primary: #4f46e5;
+  --accent-primary-hover: #4338ca;
+  --radius-card: 0.75rem;
+  --radius-control: 0.5rem;
+}
+
+html.dark {
+  color-scheme: dark;
+  --bg-app: #0b1120;
+  --bg-surface: #111827;
+  --bg-surface-muted: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-subtle: #1f2937;
+  --border-strong: #334155;
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #4f46e5;
+}
+
+html.dark body,
+html.dark #app {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+}
+
+html.dark .bg-white {
+  background-color: var(--bg-surface) !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-100 {
+  background-color: var(--bg-surface-muted) !important;
+}
+
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: var(--text-primary) !important;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-600 {
+  color: var(--text-secondary) !important;
+}
+
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: var(--text-muted) !important;
+}
+
+html.dark .border-slate-200,
+html.dark .border-slate-300,
+html.dark .border-slate-100 {
+  border-color: var(--border-subtle) !important;
+}
+
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--border-subtle) !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #0f172a !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-strong) !important;
+}

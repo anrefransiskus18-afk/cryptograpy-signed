@@ -1,0 +1,119 @@
+{
+  "timestamp": "2026-11-09T09:06:41Z",
+  "avg_ecc_keygen_pkcs8_ms": 907.998,
+  "pkcs8_private_key_unwrap_ms": 446.537,
+  "performance_results": [
+    {
+      "code": "DOC-S",
+      "label": "1 MiB",
+      "iterations": 10,
+      "original_size_bytes": 1048576,
+      "encrypted_size_bytes": 1048705,
+      "overhead_bytes": 129,
+      "overhead_percent": 0.012302,
+      "avg_encrypt_ms": 14.153,
+      "sd_encrypt_ms": 4.821,
+      "avg_decrypt_ms": 11.261,
+      "sd_decrypt_ms": 3.103,
+      "throughput_encrypt_mibs": 70.66,
+      "throughput_decrypt_mibs": 88.8,
+      "peak_ram_mib": 3.0,
+      "plaintext_entropy": 4.989516,
+      "ciphertext_entropy": 7.999832,
+      "avalanche_effect_percent": 49.9949
+    },
+    {
+      "code": "DOC-M",
+      "label": "10 MiB",
+      "iterations": 5,
+      "original_size_bytes": 10485760,
+      "encrypted_size_bytes": 10485889,
+      "overhead_bytes": 129,
+      "overhead_percent": 0.00123,
+      "avg_encrypt_ms": 66.502,
+      "sd_encrypt_ms": 8.481,
+      "avg_decrypt_ms": 66.221,
+      "sd_decrypt_ms": 20.265,
+      "throughput_encrypt_mibs": 150.37,
+      "throughput_decrypt_mibs": 151.01,
+      "peak_ram_mib": 40.0,
+      "plaintext_entropy": 4.989516,
+      "ciphertext_entropy": 7.999839,
+      "avalanche_effect_percent": 49.9741
+    },
+    {
+      "code": "DOC-L",
+      "label": "100 MiB",
+      "iterations": 3,
+      "original_size_bytes": 104857600,
+      "encrypted_size_bytes": 104857729,
+      "overhead_bytes": 129,
+      "overhead_percent": 0.000123,
+      "avg_encrypt_ms": 992.835,
+      "sd_encrypt_ms": 201.822,
+      "avg_decrypt_ms": 957.442,
+      "sd_decrypt_ms": 157.055,
+      "throughput_encrypt_mibs": 100.72,
+      "throughput_decrypt_mibs": 104.44,
+      "peak_ram_mib": 400.02,
+      "plaintext_entropy": 4.989516,
+      "ciphertext_entropy": 7.999857,
+      "avalanche_effect_percent": 49.9063
+    }
+  ],
+  "tamper_detection": {
+    "total_scenarios": 12,
+    "detected_scenarios": 12,
+    "detection_rate_percent": 100.0,
+    "scenarios": [
+      {
+        "scenario": "S1: Flip 1-bit Magic Header",
+        "detected": true
+      },
+      {
+        "scenario": "S2: Corrupt Version Byte Header",
+        "detected": true
+      },
+      {
+        "scenario": "S3: Corrupt Q_eph Prefix (0x04 -> 0x02)",
+        "detected": true
+      },
+      {
+        "scenario": "S4: Flip 1-bit Q_eph X-Coordinate",
+        "detected": true
+      },
+      {
+        "scenario": "S5: Flip 1-bit Wrapped Session Key C_key",
+        "detected": true
+      },
+      {
+        "scenario": "S6: Zero-out Wrapped Session Key C_key",
+        "detected": true
+      },
+      {
+        "scenario": "S7: Flip 1-bit AES-GCM IV/Nonce",
+        "detected": true
+      },
+      {
+        "scenario": "S8: Flip 1-bit AES-GCM Authentication Tag",
+        "detected": true
+      },
+      {
+        "scenario": "S9: Flip 1-bit Ciphertext First Byte",
+        "detected": true
+      },
+      {
+        "scenario": "S10: Flip 1-bit Ciphertext Last Byte",
+        "detected": true
+      },
+      {
+        "scenario": "S11: Modify AAD Classification Metadata",
+        "detected": true
+      },
+      {
+        "scenario": "S12: Unauthorized Recipient Private Key",
+        "detected": true
+      }
+    ]
+  }
+}

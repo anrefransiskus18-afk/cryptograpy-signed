@@ -1,0 +1,62 @@
+stages:
+  - test
+  - build
+  - deploy
+
+backend-test:
+  stage: test
+  image: python:3.12-slim
+  script:
+    - cd backend
+    - pip install --no-cache-dir -r requirements.txt pip-audit
+    - pip-audit -r requirements.txt
+    - python -m py_compile app/*.py app/api/*.py app/core/*.py app/cryptography/*.py app/dto/*.py app/repositories/*.py app/services/*.py
+    - pytest -v
+
+frontend-test:
+  stage: test
+  image: node:22-alpine
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint:arch
+    - npm run test:coverage
+    - npm run test:integration
+    - npm audit --audit-level=high
+
+frontend-build:
+  stage: build
+  image: node:22-alpine
+  needs: [frontend-test]
+  variables:
+    VITE_API_BASE_URL: /api/v1
+    VITE_SHOW_DEMO_ACCOUNTS: "false"
+  script:
+    - cd frontend
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist
+    expire_in: 1 week
+
+deploy-staging:
+  stage: deploy
+  needs: [backend-test, frontend-build]
+  environment:
+    name: staging
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging"'
+  script:
+    - echo "Deploy staging ready. Jalankan docker compose -p ptxyz-staging --env-file .env.staging up -d --build pada runner/server staging."
+
+deploy-production:
+  stage: deploy
+  needs: [backend-test, frontend-build]
+  environment:
+    name: production
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - echo "Deploy production ready. Jalankan docker compose -p ptxyz-prod --env-file .env.production up -d --build pada runner/server production."

@@ -1,0 +1,26 @@
+# Rahasia & data sensitif — jangan pernah di-commit
+backend/server_audit_key.pem
+backend/storage/
+backend/hybrid_crypto.db
+*.db
+.env
+.env.*
+!.env.example
+!.env.staging.example
+!.env.production.example
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Node / build
+frontend/node_modules/
+frontend/dist/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

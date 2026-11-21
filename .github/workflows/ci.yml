@@ -1,0 +1,76 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  backend-check:
+    name: Backend Lint & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt pip-audit
+      - name: Python dependency vulnerability audit
+        working-directory: backend
+        run: pip-audit -r requirements.txt
+      - name: Python syntax check
+        working-directory: backend
+        run: python -m py_compile app/*.py app/api/*.py app/core/*.py app/cryptography/*.py app/dto/*.py app/repositories/*.py
+      - name: Run pytest
+        working-directory: backend
+        run: pytest -v
+
+  frontend-check:
+    name: Frontend Architecture, Tests & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Architecture, Cycle & Security Check
+        working-directory: frontend
+        run: npm run lint:arch
+      - name: Unit, Cryptography & Coverage Tests
+        working-directory: frontend
+        run: npm run test:coverage
+      - name: Integration Tests
+        working-directory: frontend
+        run: npm run test:integration
+      - name: Dependency Vulnerability Audit
+        working-directory: frontend
+        run: npm audit --audit-level=high
+        continue-on-error: false
+      - name: Production Build Validation
+        working-directory: frontend
+        env:
+          VITE_API_BASE_URL: /api/v1
+          VITE_SHOW_DEMO_ACCOUNTS: "false"
+        run: npm run build
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+  deploy-production:
+    name: Deploy Production (Requires Approval)
+    needs: [backend-check, frontend-check]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deployment Gate Passed
+        run: echo "Manual approval granted and all quality gates passed."
