@@ -74,7 +74,18 @@ def init_database_and_seed():
         except Exception:
             pass
 
-    Base.metadata.create_all(bind=engine)
+    import time
+    from sqlalchemy.exc import OperationalError
+
+    for attempt in range(1, 16):
+        try:
+            Base.metadata.create_all(bind=engine)
+            break
+        except OperationalError:
+            if attempt == 15:
+                raise
+            logger.warning("Database belum siap (percobaan %d/15), mencoba ulang dalam 2 detik...", attempt)
+            time.sleep(2)
     try:
         _ensure_schema_columns()
     except Exception:
@@ -177,6 +188,7 @@ def create_app() -> Flask:
     import os
     import re
     import threading
+    import time
     import uuid
     from flask import g, Response
     from werkzeug.middleware.proxy_fix import ProxyFix
@@ -186,13 +198,20 @@ def create_app() -> Flask:
     app.config["MAX_CONTENT_LENGTH"] = Config.MAX_CONTENT_LENGTH
 
     _metrics_lock = threading.Lock()
-    _metrics_state = {"requests_total": 0, "errors_4xx": 0, "errors_5xx": 0}
+    _metrics_state = {
+        "requests_total": 0,
+        "errors_4xx": 0,
+        "errors_5xx": 0,
+        "duration_seconds_sum": 0.0,
+        "duration_seconds_count": 0,
+    }
 
     if Config.IS_PRODUCTION or os.getenv("TRUST_PROXY", "").lower() == "true":
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     @app.before_request
     def attach_correlation_id():
+        g.request_start_time = time.perf_counter()
         incoming = (request.headers.get("X-Correlation-ID") or "").strip()
         if incoming and re.fullmatch(r"[A-Za-z0-9._-]{1,64}", incoming):
             g.correlation_id = incoming
@@ -222,12 +241,25 @@ def create_app() -> Flask:
         # Respons API memuat data sensitif: jangan biarkan browser / proxy menyimpannya di cache
         if request.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
+        elapsed_sec = max(0.0, time.perf_counter() - getattr(g, "request_start_time", time.perf_counter()))
         with _metrics_lock:
             _metrics_state["requests_total"] += 1
+            _metrics_state["duration_seconds_sum"] += elapsed_sec
+            _metrics_state["duration_seconds_count"] += 1
             if 400 <= response.status_code < 500:
                 _metrics_state["errors_4xx"] += 1
             elif response.status_code >= 500:
                 _metrics_state["errors_5xx"] += 1
+        if request.path.startswith("/api/") and request.path not in ("/api/v1/health", "/api/v1/metrics"):
+            app.logger.info(
+                '{"event":"http_request","method":"%s","path":"%s","status":%d,"duration_ms":%.2f,"correlation_id":"%s","ip":"%s"}',
+                request.method,
+                request.path,
+                response.status_code,
+                elapsed_sec * 1000.0,
+                cid or "",
+                request.remote_addr or "",
+            )
         return response
 
     @app.route("/api/<path:subpath>", methods=["OPTIONS"])
@@ -239,12 +271,22 @@ def create_app() -> Flask:
     @app.route("/api/health", methods=["GET"])
     @app.route("/api/v1/health", methods=["GET"])
     def health():
+        db_ok = True
+        db = get_db_session()
+        try:
+            db.execute(text("SELECT 1"))
+        except Exception:
+            db_ok = False
+        finally:
+            db.close()
+        status_code = 200 if db_ok else 503
         return jsonify({
-            "status": "ok",
+            "status": "ok" if db_ok else "degraded",
+            "database": "connected" if db_ok else "unreachable",
             "framework": Config.APP_NAME,
             "version": Config.VERSION,
             "crypto": "AES-256-GCM + ECC NIST P-256 + ECDH + HKDF-SHA256 + Argon2id",
-        })
+        }), status_code
 
     @app.route("/metrics", methods=["GET"])
     @app.route("/api/v1/metrics", methods=["GET"])
@@ -253,6 +295,8 @@ def create_app() -> Flask:
             req_total = _metrics_state["requests_total"]
             err_4xx = _metrics_state["errors_4xx"]
             err_5xx = _metrics_state["errors_5xx"]
+            dur_sum = _metrics_state["duration_seconds_sum"]
+            dur_cnt = _metrics_state["duration_seconds_count"]
         body = (
             "# HELP app_http_requests_total Total HTTP requests handled\n"
             "# TYPE app_http_requests_total counter\n"
@@ -263,6 +307,12 @@ def create_app() -> Flask:
             "# HELP app_http_errors_5xx_total Total HTTP 5xx responses\n"
             "# TYPE app_http_errors_5xx_total counter\n"
             f"app_http_errors_5xx_total {err_5xx}\n"
+            "# HELP app_http_request_duration_seconds_sum Total HTTP request duration in seconds\n"
+            "# TYPE app_http_request_duration_seconds_sum counter\n"
+            f"app_http_request_duration_seconds_sum {dur_sum:.6f}\n"
+            "# HELP app_http_request_duration_seconds_count Total HTTP request duration samples\n"
+            "# TYPE app_http_request_duration_seconds_count counter\n"
+            f"app_http_request_duration_seconds_count {dur_cnt}\n"
         )
         return Response(body, mimetype="text/plain; version=0.0.4; charset=utf-8")
 

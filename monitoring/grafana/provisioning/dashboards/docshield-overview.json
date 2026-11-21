@@ -1,0 +1,53 @@
+{
+  "title": "PT XYZ DocShield — API & Error Monitoring",
+  "uid": "docshield-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total HTTP Requests",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "app_http_requests_total", "refId": "A" }]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Total 5xx Server Errors",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "app_http_errors_5xx_total", "refId": "A" }]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Total 4xx Client/Auth Errors",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "app_http_errors_4xx_total", "refId": "A" }]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Avg Request Latency (ms)",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "(rate(app_http_request_duration_seconds_sum[5m]) / clamp_min(rate(app_http_request_duration_seconds_count[5m]), 0.0001)) * 1000",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Request Rate & Error Rate (req/s)",
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 8 },
+      "targets": [
+        { "expr": "rate(app_http_requests_total[1m])", "legendFormat": "Total req/s", "refId": "A" },
+        { "expr": "rate(app_http_errors_4xx_total[1m])", "legendFormat": "4xx/s", "refId": "B" },
+        { "expr": "rate(app_http_errors_5xx_total[1m])", "legendFormat": "5xx/s", "refId": "C" }
+      ]
+    }
+  ]
+}
