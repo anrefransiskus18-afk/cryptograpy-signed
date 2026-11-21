@@ -8,8 +8,14 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     }
   },
-  "include": ["src/**/*.js", "src/**/*.d.ts", "src/**/*.vue"]
+  "include": [
+    "src/**/*.js",
+    "src/**/*.d.ts",
+    "src/**/*.vue"
+  ]
 }
