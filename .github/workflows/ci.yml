@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, staging]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, staging]
 
 jobs:
   backend-check:
@@ -22,7 +22,7 @@ jobs:
         run: pip-audit -r requirements.txt
       - name: Python syntax check
         working-directory: backend
-        run: python -m py_compile app/*.py app/api/*.py app/core/*.py app/cryptography/*.py app/dto/*.py app/repositories/*.py
+        run: python -m py_compile app/*.py app/api/*.py app/core/*.py app/cryptography/*.py app/dto/*.py app/repositories/*.py app/services/*.py
       - name: Run pytest
         working-directory: backend
         run: pytest -v
@@ -65,6 +65,16 @@ jobs:
           name: frontend-dist
           path: frontend/dist
 
+  deploy-staging:
+    name: Deploy Staging
+    needs: [backend-check, frontend-check]
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Staging Gate Passed
+        run: echo "All staging quality gates passed. Ready for staging container rollout."
+
   deploy-production:
     name: Deploy Production (Requires Approval)
     needs: [backend-check, frontend-check]
@@ -72,5 +82,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Deployment Gate Passed
-        run: echo "Manual approval granted and all quality gates passed."
+      - uses: actions/checkout@v4
+      - name: Production Gate Passed
+        run: |
+          echo "Manual approval granted and all quality gates passed."
+          echo "Run on target production host: docker compose -p ptxyz-prod --env-file .env.production up -d --build"
