@@ -1,3 +1,9 @@
+export type Brand<T, B extends string> = T & { readonly __brand: B };
+
+export type PlaintextBytes = Brand<Uint8Array, "PlaintextBytes">;
+export type CiphertextBytes = Brand<Uint8Array, "CiphertextBytes">;
+export type KeyFingerprint = Brand<string, "KeyFingerprint">;
+
 export type UserRole =
   | "SECURITY_ADMIN"
   | "ADMINISTRATOR"
@@ -13,6 +19,28 @@ export type ClassificationLevel =
   | "TOP_SECRET";
 
 export type KeyWrapMode = "XOR_AAD" | "AES_GCM_KW";
+
+export interface MessageResponse {
+  message: string;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+  relogin_required?: boolean;
+}
+
+export interface VerifyAuditChainResponse {
+  valid: boolean;
+  total: number;
+  checked: number;
+  broken_at_id: number | null;
+  reason: string | null;
+  checked_at: string;
+}
+
+export type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
 
 export interface UserProfile {
   id: number;

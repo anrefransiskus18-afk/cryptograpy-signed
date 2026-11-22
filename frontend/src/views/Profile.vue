@@ -160,7 +160,9 @@ import MonoCopyBox from "../components/MonoCopyBox.vue";
 import PasswordInput from "../components/PasswordInput.vue";
 import AlertBanner from "../components/AlertBanner.vue";
 
-const emit = defineEmits(["auth-updated"]);
+const emit = defineEmits<{
+  (e: "auth-updated"): void;
+}>();
 const router = useRouter();
 const { formatRole } = useFormatters();
 const { t } = useI18n();

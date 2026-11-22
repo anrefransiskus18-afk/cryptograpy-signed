@@ -168,7 +168,7 @@ import {
   DocumentResponseDTO,
   extractApiError
 } from "../dto";
-import { ErrorType } from "../utils/errors";
+import { AppError, ErrorType } from "../utils/errors";
 import { useAuthStore } from "../stores/auth";
 import { useFormatters } from "../composables/useFormatters";
 import { useI18n } from "../i18n";
@@ -212,8 +212,8 @@ const sortedStoredDocuments = computed(() =>
 function assignEncFile(file: File) {
   try {
     decryptionService.validateEncFile(file);
-  } catch (err: any) {
-    generalError.value = err.message;
+  } catch (err: unknown) {
+    generalError.value = extractApiError(err, "File terenkripsi tidak valid.");
     return;
   }
   decryptReq.value.document_id = null;
@@ -291,8 +291,11 @@ async function executeDecryption() {
     });
     decryptionSuccess.value = true;
     toast.show(`Dokumen ${filename} berhasil dibuka.`, "success");
-  } catch (err: any) {
-    if (err?.type === ErrorType.CRYPTO || err?.status === 422 || err?.errorCode === "TAMPER_DETECTED") {
+  } catch (err: unknown) {
+    if (
+      err instanceof AppError &&
+      (err.type === ErrorType.CRYPTO || err.status === 422 || err.errorCode === "TAMPER_DETECTED")
+    ) {
       tamperAlert.value = err.message || "Isi dokumen tidak asli atau telah dimodifikasi.";
       toast.show("Peringatan: File terdeteksi telah diubah atau rusak!", "error");
       return;

@@ -5,6 +5,7 @@ import {
   DocumentListResponseDTO,
   DocumentResponseDTO
 } from "../dto";
+import type { MessageResponse } from "../types/domain";
 
 export class DocumentRepository extends BaseRepository {
   list(
@@ -30,8 +31,8 @@ export class DocumentRepository extends BaseRepository {
     return this.getBlob(API_ENDPOINTS.DOCUMENTS.DOWNLOAD(docId), config);
   }
 
-  remove(docId: number | string): Promise<any> {
-    return this.delete(API_ENDPOINTS.DOCUMENTS.BY_ID(docId));
+  remove(docId: number | string): Promise<MessageResponse> {
+    return this.delete<MessageResponse>(API_ENDPOINTS.DOCUMENTS.BY_ID(docId));
   }
 }
 

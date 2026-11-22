@@ -1,12 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto, randomBytes } from "node:crypto";
-import { AadMetadataDTO, EncryptDocumentRequestDTO, DecryptDocumentRequestDTO } from "../src/dto/document.dto.js";
-import { EncryptionService, MAX_UPLOAD_BYTES } from "../src/services/EncryptionService.js";
-import { BaseRepository } from "../src/repositories/BaseRepository.js";
-import { sanitizeLogData } from "../src/utils/logger.js";
-import { ErrorType } from "../src/utils/errors.js";
-import { useFormatters } from "../src/composables/useFormatters.js";
+import { AadMetadataDTO, EncryptDocumentRequestDTO, DecryptDocumentRequestDTO } from "../src/dto/document.dto.ts";
+import { EncryptionService, MAX_UPLOAD_BYTES } from "../src/services/EncryptionService.ts";
+import { BaseRepository } from "../src/repositories/BaseRepository.ts";
+import { sanitizeLogData } from "../src/utils/logger.ts";
+import { ErrorType } from "../src/utils/errors.ts";
+import { useFormatters } from "../src/composables/useFormatters.ts";
 
 const subtle = webcrypto.subtle;
 
@@ -161,7 +161,7 @@ test("useFormatters formats bytes, roles, classifications, actions, and statuses
 });
 
 test("sanitizeCsvCell neutralizes spreadsheet formula injection (CWE-1236)", async () => {
-  const { sanitizeCsvCell } = await import("../src/utils/file.js");
+  const { sanitizeCsvCell } = await import("../src/utils/file.ts");
   assert.equal(sanitizeCsvCell("=CMD('calc')"), "\"'=CMD('calc')\"");
   assert.equal(sanitizeCsvCell("+1+1"), "\"'+1+1\"");
   assert.equal(sanitizeCsvCell("-2+3"), "\"'-2+3\"");
@@ -170,13 +170,13 @@ test("sanitizeCsvCell neutralizes spreadsheet formula injection (CWE-1236)", asy
 });
 
 test("DEMO_MODE defaults to false when DEV is falsy and VITE_SHOW_DEMO_ACCOUNTS is unset", async () => {
-  const { DEMO_MODE, DEMO_PASSWORD } = await import("../src/config/demo.js");
+  const { DEMO_MODE, DEMO_PASSWORD } = await import("../src/config/demo.ts");
   assert.equal(DEMO_MODE, false);
   assert.equal(DEMO_PASSWORD, "");
 });
 
 test("i18n translates Indonesian and English keys with interpolation and fallback", async () => {
-  const { setLocale, t, locale } = await import("../src/i18n/index.js");
+  const { setLocale, t, locale } = await import("../src/i18n/index.ts");
   setLocale("id");
   assert.equal(locale.value, "id");
   assert.equal(t("nav.dashboard"), "Beranda");
@@ -199,7 +199,7 @@ test("Typed error classes preserve ErrorType semantics", async () => {
     TimeoutError,
     CryptographyError,
     normalizeApiError
-  } = await import("../src/utils/errors.js");
+  } = await import("../src/utils/errors.ts");
 
   const vErr = new ValidationError("invalid");
   assert.equal(vErr.type, ErrorType.VALIDATION);
@@ -214,14 +214,14 @@ test("Typed error classes preserve ErrorType semantics", async () => {
 });
 
 test("useTheme and usePermissions behave predictably", async () => {
-  const { setTheme, toggleTheme, useTheme } = await import("../src/composables/useTheme.js");
+  const { setTheme, toggleTheme, useTheme } = await import("../src/composables/useTheme.ts");
   const { isDark } = useTheme();
   setTheme("dark");
   assert.equal(isDark.value, true);
   toggleTheme();
   assert.equal(isDark.value, false);
 
-  const { usePermissions } = await import("../src/composables/usePermissions.js");
+  const { usePermissions } = await import("../src/composables/usePermissions.ts");
   const perms = usePermissions(() => ({
     isAdmin: false,
     user: { id: 5, role: "EXECUTIVE", clearance_level: 3 }

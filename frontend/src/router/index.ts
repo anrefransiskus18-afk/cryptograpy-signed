@@ -1,5 +1,15 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 import { t } from "../i18n";
+import { clearAllSessionStorage, getStoredRawUser, getStoredToken } from "../utils/sessionStorage";
+
+declare module "vue-router" {
+  interface RouteMeta {
+    public?: boolean;
+    titleKey?: string;
+    title?: string;
+    roles?: string[];
+  }
+}
 
 const routes: RouteRecordRaw[] = [
   {
@@ -78,21 +88,30 @@ const router = createRouter({
 });
 
 function hasValidStoredSession(): boolean {
-  const token = localStorage.getItem("jwt_token");
-  const rawUser = localStorage.getItem("current_user");
+  const token = getStoredToken();
+  const rawUser = getStoredRawUser();
   if (!token || !rawUser) {
     if (token || rawUser) {
-      localStorage.removeItem("jwt_token");
-      localStorage.removeItem("current_user");
+      clearAllSessionStorage();
     }
     return false;
   }
   try {
     return Boolean(JSON.parse(rawUser));
   } catch {
-    localStorage.removeItem("jwt_token");
-    localStorage.removeItem("current_user");
+    clearAllSessionStorage();
     return false;
+  }
+}
+
+function getStoredUserRole(): string | null {
+  try {
+    const rawUser = getStoredRawUser();
+    if (!rawUser) return null;
+    const parsed = JSON.parse(rawUser) as { role?: unknown } | null;
+    return typeof parsed?.role === "string" ? parsed.role : null;
+  } catch {
+    return null;
   }
 }
 
@@ -110,6 +129,12 @@ router.beforeEach((to, _from, next) => {
   }
   if (to.path === "/login" && isAuthenticated) {
     return next("/");
+  }
+  if (Array.isArray(to.meta.roles) && to.meta.roles.length > 0) {
+    const role = getStoredUserRole();
+    if (!role || !to.meta.roles.includes(role)) {
+      return next("/");
+    }
   }
   next();
 });

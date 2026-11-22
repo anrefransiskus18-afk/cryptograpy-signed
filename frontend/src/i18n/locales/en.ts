@@ -149,5 +149,29 @@ export default {
     FAILURE: "Denied",
     ALERT: "Alert",
     ENCRYPTED: "Encrypted"
+  },
+  components: {
+    close: "Close",
+    closeNotification: "Close notification",
+    confirmTitle: "Confirm Action",
+    confirmMessage: "Are you sure you want to proceed with this action?",
+    confirmAction: "Yes, Continue",
+    previous: "Previous",
+    next: "Next",
+    showing: "Showing",
+    of: "of",
+    page: "Page",
+    items: "items",
+    loadingData: "Loading data...",
+    noData: "No data available.",
+    copy: "Copy",
+    copiedSuccess: "{label} copied to clipboard.",
+    defaultCopyLabel: "Text",
+    showPassword: "Show",
+    hidePassword: "Hide",
+    processing: "Processing...",
+    dropzoneEmpty: "Click to select a file or drag and drop here",
+    dropzoneChange: "Click to replace file",
+    searchPlaceholder: "Search..."
   }
 };

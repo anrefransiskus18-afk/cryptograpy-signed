@@ -1,14 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import axios from "axios";
-import { attachInterceptors } from "../src/api/interceptors.js";
-import { BaseRepository } from "../src/repositories/BaseRepository.js";
-import { CryptoRepository } from "../src/repositories/CryptoRepository.js";
-import { DocumentRepository } from "../src/repositories/DocumentRepository.js";
-import { EncryptionService } from "../src/services/EncryptionService.js";
-import { DecryptionService } from "../src/services/DecryptionService.js";
-import { DocumentService } from "../src/services/DocumentService.js";
-import { ErrorType } from "../src/utils/errors.js";
+import { attachInterceptors } from "../src/api/interceptors.ts";
+import { BaseRepository } from "../src/repositories/BaseRepository.ts";
+import { CryptoRepository } from "../src/repositories/CryptoRepository.ts";
+import { DocumentRepository } from "../src/repositories/DocumentRepository.ts";
+import { EncryptionService } from "../src/services/EncryptionService.ts";
+import { DecryptionService } from "../src/services/DecryptionService.ts";
+import { DocumentService } from "../src/services/DocumentService.ts";
+import { ErrorType } from "../src/utils/errors.ts";
 
 function withMockBrowserGlobals(fn) {
   const origLocal = globalThis.localStorage;

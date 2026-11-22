@@ -149,5 +149,29 @@ export default {
     FAILURE: "Ditolak",
     ALERT: "Peringatan",
     ENCRYPTED: "Terkunci Aman"
+  },
+  components: {
+    close: "Tutup",
+    closeNotification: "Tutup notifikasi",
+    confirmTitle: "Konfirmasi Tindakan",
+    confirmMessage: "Apakah Anda yakin ingin melanjutkan tindakan ini?",
+    confirmAction: "Ya, Lanjutkan",
+    previous: "Sebelumnya",
+    next: "Berikutnya",
+    showing: "Menampilkan",
+    of: "dari",
+    page: "Halaman",
+    items: "item",
+    loadingData: "Sedang memuat data...",
+    noData: "Tidak ada data yang tersedia.",
+    copy: "Salin",
+    copiedSuccess: "{label} berhasil disalin.",
+    defaultCopyLabel: "Teks",
+    showPassword: "Lihat Sandi",
+    hidePassword: "Sembunyikan",
+    processing: "Memproses...",
+    dropzoneEmpty: "Klik untuk memilih file atau seret ke sini",
+    dropzoneChange: "Klik untuk mengganti file",
+    searchPlaceholder: "Cari..."
   }
 };

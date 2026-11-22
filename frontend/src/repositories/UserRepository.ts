@@ -7,6 +7,7 @@ import {
   UserResponseDTO,
   UserMutationResponseDTO
 } from "../dto";
+import type { MessageResponse } from "../types/domain";
 
 export class UserRepository extends BaseRepository {
   list(
@@ -38,8 +39,8 @@ export class UserRepository extends BaseRepository {
     });
   }
 
-  remove(userId: number | string): Promise<any> {
-    return this.delete(API_ENDPOINTS.USERS.BY_ID(userId));
+  remove(userId: number | string): Promise<MessageResponse> {
+    return this.delete<MessageResponse>(API_ENDPOINTS.USERS.BY_ID(userId));
   }
 }
 

@@ -1,19 +1,30 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { Lazy, UserProfileDTO } from "../dto";
+import {
+  clearAllSessionStorage,
+  getStoredKeyFingerprint,
+  getStoredPrivateKey,
+  getStoredRawUser,
+  getStoredToken,
+  setStoredKeyFingerprint,
+  setStoredPrivateKey,
+  setStoredToken,
+  setStoredUser
+} from "../utils/sessionStorage";
 
 export const useAuthStore = defineStore("auth", () => {
-  const token = ref<string>(localStorage.getItem("jwt_token") || "");
+  const token = ref<string>(getStoredToken());
   const user = ref<UserProfileDTO | null>((() => {
     try {
-      const raw = localStorage.getItem("current_user");
+      const raw = getStoredRawUser();
       return raw ? Lazy.transform<UserProfileDTO>(JSON.parse(raw), UserProfileDTO) : null;
     } catch {
       return null;
     }
   })());
-  const localPrivateKeyPem = ref<string>(sessionStorage.getItem("local_pkcs8_private_key") || "");
-  const localKeyFingerprint = ref<string>(sessionStorage.getItem("local_key_fingerprint") || "");
+  const localPrivateKeyPem = ref<string>(getStoredPrivateKey());
+  const localKeyFingerprint = ref<string>(getStoredKeyFingerprint());
 
   const isAuthenticated = computed(() => Boolean(token.value && user.value));
   const isAdmin = computed(() => {
@@ -24,48 +35,36 @@ export const useAuthStore = defineStore("auth", () => {
   const hasLocalPrivateKey = computed(() => Boolean(localPrivateKeyPem.value));
 
   function syncFromStorage(): void {
-    token.value = localStorage.getItem("jwt_token") || "";
+    token.value = getStoredToken();
     try {
-      const raw = localStorage.getItem("current_user");
+      const raw = getStoredRawUser();
       user.value = raw ? Lazy.transform<UserProfileDTO>(JSON.parse(raw), UserProfileDTO) : null;
     } catch {
       user.value = null;
     }
-    localPrivateKeyPem.value = sessionStorage.getItem("local_pkcs8_private_key") || "";
-    localKeyFingerprint.value = sessionStorage.getItem("local_key_fingerprint") || "";
+    localPrivateKeyPem.value = getStoredPrivateKey();
+    localKeyFingerprint.value = getStoredKeyFingerprint();
   }
 
-  function setSession(accessToken: string, userProfile: Record<string, any> | UserProfileDTO | null): void {
+  function setSession(accessToken: string, userProfile: Record<string, unknown> | UserProfileDTO | null): void {
     token.value = accessToken || "";
     user.value = userProfile ? Lazy.transform<UserProfileDTO>(userProfile, UserProfileDTO) : null;
-    if (token.value) {
-      localStorage.setItem("jwt_token", token.value);
-    } else {
-      localStorage.removeItem("jwt_token");
-    }
-    if (user.value) {
-      localStorage.setItem("current_user", JSON.stringify(user.value));
-    } else {
-      localStorage.removeItem("current_user");
-    }
+    setStoredToken(token.value);
+    setStoredUser(user.value);
   }
 
-  function setUser(profileDto: Record<string, any> | UserProfileDTO): UserProfileDTO {
+  function setUser(profileDto: Record<string, unknown> | UserProfileDTO): UserProfileDTO {
     user.value = Lazy.transform<UserProfileDTO>({ ...(user.value || {}), ...profileDto }, UserProfileDTO);
-    localStorage.setItem("current_user", JSON.stringify(user.value));
+    setStoredUser(user.value);
     return user.value;
   }
 
   function setLocalPrivateKey(pem: string, fingerprint = ""): void {
     localPrivateKeyPem.value = pem || "";
-    if (pem) {
-      sessionStorage.setItem("local_pkcs8_private_key", pem);
-    } else {
-      sessionStorage.removeItem("local_pkcs8_private_key");
-    }
+    setStoredPrivateKey(localPrivateKeyPem.value);
     if (fingerprint) {
       localKeyFingerprint.value = fingerprint;
-      sessionStorage.setItem("local_key_fingerprint", fingerprint);
+      setStoredKeyFingerprint(fingerprint);
     }
   }
 
@@ -74,10 +73,7 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = null;
     localPrivateKeyPem.value = "";
     localKeyFingerprint.value = "";
-    localStorage.removeItem("jwt_token");
-    localStorage.removeItem("current_user");
-    sessionStorage.removeItem("local_pkcs8_private_key");
-    sessionStorage.removeItem("local_key_fingerprint");
+    clearAllSessionStorage();
   }
 
   return {

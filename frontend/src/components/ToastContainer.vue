@@ -1,5 +1,10 @@
 <template>
-  <div class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0">
+  <div
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
+    class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0"
+  >
     <div
       v-for="t in toastStore.toasts"
       :key="t.id"
@@ -17,8 +22,9 @@
       </div>
       <button
         type="button"
+        :aria-label="translate('components.closeNotification')"
         @click="toastStore.dismiss(t.id)"
-        class="text-xs text-slate-400 hover:text-slate-700 font-bold px-1"
+        class="text-xs text-slate-400 hover:text-slate-700 font-bold px-1 cursor-pointer"
       >
         &times;
       </button>
@@ -28,8 +34,10 @@
 
 <script setup lang="ts">
 import { useToastStore, type ToastType } from "../stores/toast";
+import { useI18n } from "../i18n";
 
 const toastStore = useToastStore();
+const { t: translate } = useI18n();
 
 function toastStyle(type: ToastType) {
   if (type === "error") return "border-rose-300 shadow-rose-900/5";

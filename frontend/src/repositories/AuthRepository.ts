@@ -7,6 +7,7 @@ import {
   UpdateProfileRequestDTO,
   UserProfileDTO
 } from "../dto";
+import type { ChangePasswordResponse, MessageResponse } from "../types/domain";
 
 export class AuthRepository extends BaseRepository {
   login(payload: LoginRequestDTO | Record<string, any>): Promise<LoginResponseDTO> {
@@ -16,8 +17,8 @@ export class AuthRepository extends BaseRepository {
     });
   }
 
-  logout(): Promise<any> {
-    return this.post(API_ENDPOINTS.AUTH.LOGOUT);
+  logout(): Promise<MessageResponse> {
+    return this.post<MessageResponse>(API_ENDPOINTS.AUTH.LOGOUT);
   }
 
   getMe(config: RepositoryRequestConfig = {}): Promise<UserProfileDTO> {
@@ -34,8 +35,8 @@ export class AuthRepository extends BaseRepository {
     });
   }
 
-  changePassword(payload: ChangePasswordRequestDTO | Record<string, any>): Promise<any> {
-    return this.post(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, payload, {
+  changePassword(payload: ChangePasswordRequestDTO | Record<string, any>): Promise<ChangePasswordResponse> {
+    return this.post<ChangePasswordResponse>(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, payload, {
       requestStruct: ChangePasswordRequestDTO
     });
   }

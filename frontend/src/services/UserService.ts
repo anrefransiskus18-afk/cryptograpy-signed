@@ -6,6 +6,7 @@ import {
   type UserMutationResponseDTO,
   type UserResponseDTO
 } from "../dto";
+import type { MessageResponse } from "../types/domain";
 
 export class UserService {
   private repository: UserRepository;
@@ -47,7 +48,7 @@ export class UserService {
     return this.repository.update(userId, updateDto);
   }
 
-  remove(userId: number | string): Promise<any> {
+  remove(userId: number | string): Promise<MessageResponse> {
     return this.repository.remove(userId);
   }
 }

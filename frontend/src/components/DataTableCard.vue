@@ -5,11 +5,11 @@
     </div>
 
     <div v-if="loading" class="p-10 text-center text-xs text-slate-500">
-      {{ loadingText }}
+      {{ resolvedLoadingText }}
     </div>
 
     <div v-else-if="empty" class="p-10 text-center text-xs text-slate-500">
-      <slot name="empty">{{ emptyText }}</slot>
+      <slot name="empty">{{ resolvedEmptyText }}</slot>
     </div>
 
     <div v-else class="overflow-x-auto">
@@ -23,10 +23,24 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-  loading: { type: Boolean, default: false },
-  empty: { type: Boolean, default: false },
-  loadingText: { type: String, default: "Sedang memuat data..." },
-  emptyText: { type: String, default: "Tidak ada data yang tersedia." }
+import { computed } from "vue";
+import { useI18n } from "../i18n";
+
+export interface DataTableCardProps {
+  loading?: boolean;
+  empty?: boolean;
+  loadingText?: string;
+  emptyText?: string;
+}
+
+const props = withDefaults(defineProps<DataTableCardProps>(), {
+  loading: false,
+  empty: false,
+  loadingText: "",
+  emptyText: ""
 });
+
+const { t } = useI18n();
+const resolvedLoadingText = computed(() => props.loadingText || t("components.loadingData"));
+const resolvedEmptyText = computed(() => props.emptyText || t("components.noData"));
 </script>

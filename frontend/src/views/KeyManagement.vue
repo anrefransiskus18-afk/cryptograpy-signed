@@ -213,7 +213,9 @@ import AlertBanner from "../components/AlertBanner.vue";
 import DataTableCard from "../components/DataTableCard.vue";
 import { DEMO_KEY_PASSPHRASE } from "../config/demo";
 
-const emit = defineEmits(["auth-updated"]);
+const emit = defineEmits<{
+  (e: "auth-updated"): void;
+}>();
 const { formatRole, formatTime } = useFormatters();
 const { t } = useI18n();
 const toast = useToastStore();
@@ -259,8 +261,8 @@ function handleKeyAction() {
   errorMsg.value = "";
   try {
     keyService.validatePassphrase(keyReq.value.passphrase);
-  } catch (err: any) {
-    errorMsg.value = err.message;
+  } catch (err: unknown) {
+    errorMsg.value = extractApiError(err, "Kata sandi kunci keamanan tidak valid.");
     return;
   }
   if (myKey.value.has_active_key) {

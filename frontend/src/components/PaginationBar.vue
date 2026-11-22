@@ -1,8 +1,8 @@
 <template>
   <div class="flex items-center justify-between w-full text-xs text-slate-600">
     <div>
-      Menampilkan <span class="font-semibold text-slate-900">{{ shownCount }}</span> dari
-      <span class="font-semibold text-slate-900">{{ totalItems }}</span> {{ itemLabel }}
+      {{ t("components.showing") }} <span class="font-semibold text-slate-900">{{ shownCount }}</span> {{ t("components.of") }}
+      <span class="font-semibold text-slate-900">{{ totalItems }}</span> {{ resolvedItemLabel }}
     </div>
     <div class="flex items-center gap-2">
       <button
@@ -11,10 +11,10 @@
         @click="$emit('change', page - 1)"
         class="h-7 px-2.5 rounded border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium cursor-pointer"
       >
-        Sebelumnya
+        {{ t("components.previous") }}
       </button>
       <span class="px-2 font-medium text-slate-700">
-        Halaman {{ page }} dari {{ totalPages }}
+        {{ t("components.page") }} {{ page }} {{ t("components.of") }} {{ totalPages }}
       </span>
       <button
         type="button"
@@ -22,20 +22,32 @@
         @click="$emit('change', page + 1)"
         class="h-7 px-2.5 rounded border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium cursor-pointer"
       >
-        Berikutnya
+        {{ t("components.next") }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps({
-  page: { type: Number, required: true },
-  totalPages: { type: Number, required: true },
-  shownCount: { type: Number, required: true },
-  totalItems: { type: Number, required: true },
-  itemLabel: { type: String, default: "item" }
+import { computed } from "vue";
+import { useI18n } from "../i18n";
+
+export interface PaginationBarProps {
+  page: number;
+  totalPages: number;
+  shownCount: number;
+  totalItems: number;
+  itemLabel?: string;
+}
+
+const props = withDefaults(defineProps<PaginationBarProps>(), {
+  itemLabel: ""
 });
 
-defineEmits(["change"]);
+defineEmits<{
+  (e: "change", nextPage: number): void;
+}>();
+
+const { t } = useI18n();
+const resolvedItemLabel = computed(() => props.itemLabel || t("components.items"));
 </script>

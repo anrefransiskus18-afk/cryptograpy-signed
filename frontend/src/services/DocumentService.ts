@@ -1,6 +1,7 @@
 import { documentRepository, type DocumentRepository } from "../repositories";
 import { triggerBlobDownload } from "../utils/file";
 import type { DocumentFilterRequestDTO, DocumentListResponseDTO, DocumentResponseDTO } from "../dto";
+import type { MessageResponse } from "../types/domain";
 
 export class DocumentService {
   private repository: DocumentRepository;
@@ -24,7 +25,7 @@ export class DocumentService {
     return filename;
   }
 
-  remove(docId: number | string): Promise<any> {
+  remove(docId: number | string): Promise<MessageResponse> {
     return this.repository.remove(docId);
   }
 }

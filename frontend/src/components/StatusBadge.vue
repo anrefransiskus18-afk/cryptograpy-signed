@@ -7,9 +7,16 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-const props = defineProps({
-  variant: { type: String, default: "neutral" },
-  label: { type: String, default: "" }
+export type BadgeVariant = "neutral" | "success" | "danger" | "warning";
+
+export interface StatusBadgeProps {
+  variant?: BadgeVariant;
+  label?: string;
+}
+
+const props = withDefaults(defineProps<StatusBadgeProps>(), {
+  variant: "neutral",
+  label: ""
 });
 
 const badgeClasses = computed(() => {

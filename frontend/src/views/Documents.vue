@@ -24,50 +24,43 @@
     </PageHeader>
 
     <!-- Filter & Pencarian -->
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
-      <div class="w-full md:w-80">
-        <input
-          v-model="filterReq.search"
-          @input="debouncedSearch"
-          type="text"
-          placeholder="Cari nama file atau kode dokumen..."
-          class="h-9 w-full bg-slate-50 focus:bg-white border border-slate-200 rounded-lg px-3.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500"
-        />
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-        <select
+    <FilterToolbar
+      v-model:search="filterReq.search"
+      searchPlaceholder="Cari nama file atau kode dokumen..."
+      @update:search="debouncedSearch"
+    >
+      <template #filters>
+        <BaseSelect
           v-model="filterReq.classification"
-          @change="handleFilterChange"
-          class="h-9 bg-slate-50 border border-slate-200 rounded-lg px-3 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
+          @update:modelValue="handleFilterChange"
+          selectClass="font-medium text-slate-700"
         >
           <option value="">Semua Tingkat Kerahasiaan</option>
           <option value="INTERNAL">Internal</option>
           <option value="CONFIDENTIAL">Terbatas (Confidential)</option>
           <option value="SECRET">Rahasia (Secret)</option>
           <option value="TOP_SECRET">Sangat Rahasia (Top Secret)</option>
-        </select>
+        </BaseSelect>
 
-        <select
+        <BaseSelect
           v-model="filterReq.scope"
-          @change="handleFilterChange"
-          class="h-9 bg-slate-50 border border-slate-200 rounded-lg px-3 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
+          @update:modelValue="handleFilterChange"
+          selectClass="font-medium text-slate-700"
         >
           <option value="all">Semua Dokumen Saya</option>
           <option value="sent">Dokumen yang Saya Kirim</option>
           <option value="received">Dokumen Masuk untuk Saya</option>
-        </select>
+        </BaseSelect>
 
-        <button
+        <BaseButton
           v-if="filterReq.search || filterReq.classification || filterReq.scope !== 'all'"
-          type="button"
+          variant="secondary"
           @click="resetFilters"
-          class="h-9 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
         >
           Reset Filter
-        </button>
-      </div>
-    </div>
+        </BaseButton>
+      </template>
+    </FilterToolbar>
 
     <!-- Tabel Dokumen -->
     <DataTableCard
@@ -258,6 +251,9 @@ import { usePermissions } from "../composables/usePermissions";
 import { useFormatters } from "../composables/useFormatters";
 import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
+import FilterToolbar from "../components/FilterToolbar.vue";
+import BaseSelect from "../components/BaseSelect.vue";
+import BaseButton from "../components/BaseButton.vue";
 import ConfirmModal from "../components/ConfirmModal.vue";
 import PageHeader from "../components/PageHeader.vue";
 import DataTableCard from "../components/DataTableCard.vue";

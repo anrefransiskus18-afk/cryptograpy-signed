@@ -220,8 +220,8 @@ function validateAndSetFile(file: File) {
   try {
     encryptReq.value.document = encryptionService.validateFile(file);
     errorMessage.value = "";
-  } catch (err: any) {
-    errorMessage.value = err.message;
+  } catch (err: unknown) {
+    errorMessage.value = extractApiError(err, "File tidak valid.");
   }
 }
 

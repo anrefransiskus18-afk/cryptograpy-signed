@@ -1,17 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { EncryptionService } from "../src/services/EncryptionService.js";
-import { DecryptionService } from "../src/services/DecryptionService.js";
-import { CryptoService } from "../src/services/CryptoService.js";
-import { KeyService } from "../src/services/KeyService.js";
-import { AuthService } from "../src/services/AuthService.js";
-import { AuditService } from "../src/services/AuditService.js";
-import { DocumentService } from "../src/services/DocumentService.js";
-import { UserService } from "../src/services/UserService.js";
-import { DashboardService } from "../src/services/DashboardService.js";
-import { SettingsService } from "../src/services/SettingsService.js";
-import { flipLastBitInContainer } from "../src/utils/crypto/tamperSimulator.js";
-import { ErrorType } from "../src/utils/errors.js";
+import { EncryptionService } from "../src/services/EncryptionService.ts";
+import { DecryptionService } from "../src/services/DecryptionService.ts";
+import { CryptoService } from "../src/services/CryptoService.ts";
+import { KeyService } from "../src/services/KeyService.ts";
+import { AuthService } from "../src/services/AuthService.ts";
+import { AuditService } from "../src/services/AuditService.ts";
+import { DocumentService } from "../src/services/DocumentService.ts";
+import { UserService } from "../src/services/UserService.ts";
+import { DashboardService } from "../src/services/DashboardService.ts";
+import { SettingsService } from "../src/services/SettingsService.ts";
+import { flipLastBitInContainer } from "../src/utils/crypto/tamperSimulator.ts";
+import { ErrorType } from "../src/utils/errors.ts";
 
 function withMockedBrowserDownload(fn) {
   const origWindow = globalThis.window;

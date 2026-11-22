@@ -26,18 +26,12 @@
     </PageHeader>
 
     <!-- Filter & Pencarian Pengguna -->
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div class="w-full sm:w-80">
-        <input
-          v-model="filterReq.search"
-          @input="debouncedLoadUsers"
-          type="text"
-          placeholder="Cari nama, username, atau email pengguna..."
-          class="h-9 w-full bg-slate-50 focus:bg-white border border-slate-200 rounded-lg px-3.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500"
-        />
-      </div>
-
-      <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+    <FilterToolbar
+      v-model:search="filterReq.search"
+      searchPlaceholder="Cari nama, username, atau email pengguna..."
+      @update:search="debouncedLoadUsers"
+    >
+      <template #actions>
         <label
           v-if="authStore.isAdmin"
           class="inline-flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer"
@@ -51,18 +45,15 @@
           <span>Tampilkan Akun yang Dicabut</span>
         </label>
 
-        <select
+        <BaseSelect
           v-model="filterReq.role"
-          @change="loadUsers"
-          class="h-9 bg-slate-50 border border-slate-200 rounded-lg px-3 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
-        >
-          <option value="">Semua Peran Pengguna</option>
-          <option v-for="opt in ROLE_OPTIONS" :key="opt.value" :value="opt.value">
-            {{ opt.label }}
-          </option>
-        </select>
-      </div>
-    </div>
+          :options="ROLE_OPTIONS"
+          placeholder="Semua Peran Pengguna"
+          @update:modelValue="loadUsers"
+          selectClass="font-medium text-slate-700"
+        />
+      </template>
+    </FilterToolbar>
 
     <!-- Tabel Pengguna -->
     <DataTableCard
@@ -370,6 +361,8 @@ import CopyButton from "../components/CopyButton.vue";
 import StatusBadge from "../components/StatusBadge.vue";
 import BaseModal from "../components/BaseModal.vue";
 import PasswordInput from "../components/PasswordInput.vue";
+import FilterToolbar from "../components/FilterToolbar.vue";
+import BaseSelect from "../components/BaseSelect.vue";
 import { DEMO_KEY_PASSPHRASE } from "../config/demo";
 
 const authStore = useAuthStore();

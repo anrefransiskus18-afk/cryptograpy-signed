@@ -11,8 +11,12 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-  title: { type: String, required: true },
-  subtitle: { type: String, default: "" }
+export interface PageHeaderProps {
+  title: string;
+  subtitle?: string;
+}
+
+withDefaults(defineProps<PageHeaderProps>(), {
+  subtitle: ""
 });
 </script>

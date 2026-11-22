@@ -10,10 +10,11 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-  rows: {
-    type: Number,
-    default: 4
-  }
+export interface SkeletonLoaderProps {
+  rows?: number;
+}
+
+withDefaults(defineProps<SkeletonLoaderProps>(), {
+  rows: 4
 });
 </script>

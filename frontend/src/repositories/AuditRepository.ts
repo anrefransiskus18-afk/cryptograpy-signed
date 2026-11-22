@@ -5,6 +5,7 @@ import {
   AuditLogListResponseDTO,
   AuthLogItemDTO
 } from "../dto";
+import type { VerifyAuditChainResponse } from "../types/domain";
 
 export class AuditRepository extends BaseRepository {
   listAuditLogs(
@@ -27,8 +28,8 @@ export class AuditRepository extends BaseRepository {
     });
   }
 
-  verifyChain(config: RepositoryRequestConfig = {}): Promise<any> {
-    return this.get(API_ENDPOINTS.AUDIT.VERIFY_CHAIN, config);
+  verifyChain(config: RepositoryRequestConfig = {}): Promise<VerifyAuditChainResponse> {
+    return this.get<VerifyAuditChainResponse>(API_ENDPOINTS.AUDIT.VERIFY_CHAIN, config);
   }
 }
 

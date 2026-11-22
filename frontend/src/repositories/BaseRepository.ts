@@ -16,7 +16,7 @@ const TRANSIENT_STATUS_CODES = new Set([502, 503, 504]);
 
 export class BaseRepository {
   protected client: AxiosInstance;
-  private _inFlightGets: Map<string, Promise<any>>;
+  private _inFlightGets: Map<string, Promise<unknown>>;
 
   constructor(client: AxiosInstance = httpClient) {
     this.client = client;
@@ -33,11 +33,12 @@ export class BaseRepository {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         return await fn();
-      } catch (err: any) {
+      } catch (err: unknown) {
         lastError = err;
-        const status = err?.response?.status;
-        const isCanceled = err?.code === "ERR_CANCELED" || err?.name === "CanceledError";
-        const isTransient = !err?.response || TRANSIENT_STATUS_CODES.has(status);
+        const httpErr = err as { response?: { status?: number }; code?: string; name?: string } | null;
+        const status = httpErr?.response?.status;
+        const isCanceled = httpErr?.code === "ERR_CANCELED" || httpErr?.name === "CanceledError";
+        const isTransient = !httpErr?.response || (status !== undefined && TRANSIENT_STATUS_CODES.has(status));
         if (isCanceled || !isTransient || attempt === retries) {
           throw normalizeApiError(err);
         }

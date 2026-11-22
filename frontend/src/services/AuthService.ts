@@ -2,6 +2,7 @@ import { authRepository, type AuthRepository } from "../repositories";
 import { useAuthStore } from "../stores/auth";
 import { Lazy, LoginRequestDTO, type LoginResponseDTO, type UserProfileDTO } from "../dto";
 import { AppError, ErrorType } from "../utils/errors";
+import type { ChangePasswordResponse } from "../types/domain";
 
 export class AuthService {
   private repository: AuthRepository;
@@ -42,13 +43,16 @@ export class AuthService {
     return this.storeProvider().setUser(profileDto);
   }
 
-  async updateProfile(payload: Record<string, any>): Promise<UserProfileDTO> {
+  async updateProfile(payload: Record<string, unknown>): Promise<UserProfileDTO> {
     const updated = await this.repository.updateMe(payload);
     this.storeProvider().setUser(updated);
     return updated;
   }
 
-  async changePassword(payload: Record<string, any>, confirmPassword?: string): Promise<any> {
+  async changePassword(
+    payload: Record<string, unknown>,
+    confirmPassword?: string
+  ): Promise<ChangePasswordResponse> {
     const newPass = String(payload?.new_password || "");
     if (newPass.length < 8) {
       throw new AppError("Kata sandi baru minimal harus 8 karakter.", {

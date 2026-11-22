@@ -1,6 +1,7 @@
 import { auditRepository, type AuditRepository } from "../repositories";
 import { exportRowsToCsv } from "../utils/file";
 import type { AuditFilterRequestDTO, AuditLogItemDTO, AuthLogItemDTO } from "../dto";
+import type { VerifyAuditChainResponse } from "../types/domain";
 
 export class AuditService {
   private repository: AuditRepository;
@@ -23,7 +24,7 @@ export class AuditService {
     };
   }
 
-  verifyChain(): Promise<any> {
+  verifyChain(): Promise<VerifyAuditChainResponse> {
     return this.repository.verifyChain();
   }
 
