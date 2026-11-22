@@ -1,13 +1,13 @@
 <template>
   <div class="p-6 max-w-3xl mx-auto space-y-5">
     <!-- Header Halaman -->
-    <PageHeader title="Buka Dokumen Terkunci (Dekripsi)">
+    <PageHeader :title="t('decrypt.title')">
       <template #actions>
         <router-link
           to="/documents"
           class="h-9 px-3.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 inline-flex items-center shrink-0"
         >
-          Lihat Daftar Dokumen
+          {{ t("decrypt.viewDocuments") }}
         </router-link>
       </template>
     </PageHeader>
@@ -166,6 +166,7 @@ import { DecryptDocumentRequestDTO, DocumentFilterRequestDTO, extractApiError } 
 import { ErrorType } from "../utils/errors";
 import { useAuthStore } from "../stores/auth";
 import { useFormatters } from "../composables/useFormatters";
+import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import { DEMO_KEY_PASSPHRASE } from "../config/demo";
 import PageHeader from "../components/PageHeader.vue";
@@ -176,6 +177,7 @@ import ProgressBar from "../components/ProgressBar.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();
+const { t } = useI18n();
 const { formatBytes, formatClassification } = useFormatters();
 const toast = useToastStore();
 

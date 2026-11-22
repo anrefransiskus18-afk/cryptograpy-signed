@@ -2,8 +2,8 @@
   <div class="p-6 max-w-[1360px] mx-auto space-y-5">
     <!-- Header Halaman -->
     <PageHeader
-      title="Daftar Dokumen Terkunci"
-      subtitle="Kelola dokumen yang sudah diamankan (.enc), unduh file, atau buka isinya kembali."
+      :title="t('documents.title')"
+      :subtitle="t('documents.subtitle')"
     >
       <template #actions>
         <button
@@ -12,13 +12,13 @@
           @click="loadDocuments"
           class="h-9 px-3.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 cursor-pointer disabled:opacity-50"
         >
-          {{ isLoading ? "Memuat..." : "Muat Ulang" }}
+          {{ isLoading ? t("common.loading") : t("common.reload") }}
         </button>
         <router-link
           to="/encrypt"
           class="h-9 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white inline-flex items-center"
         >
-          + Kunci Dokumen Baru
+          {{ t("documents.encryptNew") }}
         </router-link>
       </template>
     </PageHeader>
@@ -254,8 +254,9 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { documentService } from "../services";
 import { DocumentFilterRequestDTO, extractApiError } from "../dto";
-import { useAuthStore } from "../stores/auth";
+import { usePermissions } from "../composables/usePermissions";
 import { useFormatters } from "../composables/useFormatters";
+import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import ConfirmModal from "../components/ConfirmModal.vue";
 import PageHeader from "../components/PageHeader.vue";
@@ -265,7 +266,8 @@ import CopyButton from "../components/CopyButton.vue";
 import MonoCopyBox from "../components/MonoCopyBox.vue";
 import PaginationBar from "../components/PaginationBar.vue";
 
-const authStore = useAuthStore();
+const { canDeleteDocument: canDeleteDoc } = usePermissions();
+const { t } = useI18n();
 const {
   formatBytes,
   formatTime,
@@ -274,10 +276,6 @@ const {
   debounce
 } = useFormatters();
 const toast = useToastStore();
-
-function canDeleteDoc(doc) {
-  return authStore.isAdmin || doc.sender_id === authStore.user?.id;
-}
 
 const documents = ref([]);
 const totalItems = ref(0);

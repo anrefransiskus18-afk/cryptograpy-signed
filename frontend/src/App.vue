@@ -105,7 +105,10 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
               </svg>
             </button>
-            <h1 class="text-sm font-bold text-slate-900 truncate">{{ currentPageTitle }}</h1>
+            <div class="min-w-0">
+              <h1 class="text-sm font-bold text-slate-900 truncate">{{ currentPageTitle }}</h1>
+              <AppBreadcrumbs />
+            </div>
           </div>
 
           <div v-if="currentUser" class="flex items-center gap-3 text-xs text-slate-600 shrink-0">
@@ -161,6 +164,7 @@ import { authService } from "./services";
 import { useFormatters } from "./composables/useFormatters";
 import { useI18n } from "./i18n";
 import { useTheme } from "./composables/useTheme";
+import AppBreadcrumbs from "./components/AppBreadcrumbs.vue";
 import ToastContainer from "./components/ToastContainer.vue";
 
 const route = useRoute();

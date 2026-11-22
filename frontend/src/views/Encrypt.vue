@@ -1,15 +1,15 @@
 <template>
   <div class="p-6 max-w-3xl mx-auto space-y-5">
     <PageHeader
-      title="Kunci &amp; Amankan Dokumen (Enkripsi)"
-      subtitle="Lindungi dokumen Anda agar hanya dapat dibuka oleh penerima yang Anda pilih."
+      :title="t('encrypt.title')"
+      :subtitle="t('encrypt.subtitle')"
     >
       <template #actions>
         <router-link
           to="/documents"
           class="h-9 px-3.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 inline-flex items-center shrink-0"
         >
-          Lihat Daftar Dokumen
+          {{ t("encrypt.viewDocuments") }}
         </router-link>
       </template>
     </PageHeader>
@@ -171,6 +171,7 @@ import { cryptoService, encryptionService } from "../services";
 import { EncryptDocumentRequestDTO, extractApiError } from "../dto";
 import { useAuthStore } from "../stores/auth";
 import { useFormatters } from "../composables/useFormatters";
+import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import PageHeader from "../components/PageHeader.vue";
 import FileDropzone from "../components/FileDropzone.vue";
@@ -179,6 +180,7 @@ import ProgressBar from "../components/ProgressBar.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();
+const { t } = useI18n();
 const { formatBytes, formatClassification } = useFormatters();
 const toast = useToastStore();
 

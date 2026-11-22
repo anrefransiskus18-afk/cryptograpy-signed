@@ -2,8 +2,8 @@
   <div class="p-6 max-w-[1360px] mx-auto space-y-5">
     <!-- Header Halaman -->
     <PageHeader
-      title="Data Pengguna &amp; Hak Akses"
-      subtitle="Kelola daftar akun karyawan, peran akses dokumen, dan kesiapan kunci keamanan."
+      :title="t('users.title')"
+      :subtitle="t('users.subtitle')"
     >
       <template #actions>
         <button
@@ -12,7 +12,7 @@
           @click="loadUsers"
           class="h-9 px-3.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 cursor-pointer disabled:opacity-50"
         >
-          {{ isLoading ? "Memuat..." : "Muat Ulang" }}
+          {{ isLoading ? t("common.loading") : t("common.reload") }}
         </button>
         <button
           v-if="authStore.isAdmin"
@@ -20,7 +20,7 @@
           @click="showCreateModal = true"
           class="h-9 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white cursor-pointer"
         >
-          + Tambah Pengguna Baru
+          {{ t("users.addUser") }}
         </button>
       </template>
     </PageHeader>
@@ -360,6 +360,7 @@ import {
 } from "../dto";
 import { useAuthStore } from "../stores/auth";
 import { useFormatters } from "../composables/useFormatters";
+import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import ConfirmModal from "../components/ConfirmModal.vue";
 import PageHeader from "../components/PageHeader.vue";
@@ -372,6 +373,7 @@ import { DEMO_KEY_PASSPHRASE } from "../config/demo";
 
 const authStore = useAuthStore();
 const { formatRole, debounce } = useFormatters();
+const { t } = useI18n();
 const toast = useToastStore();
 
 const ROLE_OPTIONS = [

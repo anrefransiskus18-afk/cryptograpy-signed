@@ -1,8 +1,8 @@
 <template>
   <div class="p-6 max-w-4xl mx-auto space-y-5">
     <PageHeader
-      title="Profil &amp; Kata Sandi Saya"
-      subtitle="Lihat informasi identitas akun Anda atau perbarui kata sandi login."
+      :title="t('profile.title')"
+      :subtitle="t('profile.subtitle')"
     />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -148,6 +148,7 @@ import { useRouter } from "vue-router";
 import { authService } from "../services";
 import { ChangePasswordRequestDTO, UpdateProfileRequestDTO, extractApiError } from "../dto";
 import { useFormatters } from "../composables/useFormatters";
+import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import PageHeader from "../components/PageHeader.vue";
 import MonoCopyBox from "../components/MonoCopyBox.vue";
@@ -157,6 +158,7 @@ import AlertBanner from "../components/AlertBanner.vue";
 const emit = defineEmits(["auth-updated"]);
 const router = useRouter();
 const { formatRole } = useFormatters();
+const { t } = useI18n();
 const toast = useToastStore();
 
 const profile = ref(null);

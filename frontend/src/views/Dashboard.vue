@@ -2,46 +2,50 @@
   <div class="p-6 max-w-[1360px] mx-auto space-y-6">
     <!-- Ringkasan Atas -->
     <PageHeader
-      :title="`Selamat Datang, ${authStore.user?.full_name || 'Pengguna'}`"
-      subtitle="Pantau dokumen yang telah diamankan, kesiapan kunci keamanan Anda, dan aktivitas terbaru."
+      :title="t('dashboard.welcomeTitle', { name: authStore.user?.full_name || 'User' })"
+      :subtitle="t('dashboard.subtitle')"
     >
       <template #actions>
         <router-link
           to="/decrypt"
           class="h-9 px-3.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 inline-flex items-center transition-colors"
         >
-          Buka Dokumen (.enc)
+          {{ t("dashboard.openDocument") }}
         </router-link>
         <router-link
           to="/encrypt"
           class="h-9 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white inline-flex items-center transition-colors"
         >
-          + Kunci Dokumen Baru
+          {{ t("dashboard.lockNewDocument") }}
         </router-link>
       </template>
     </PageHeader>
 
+    <div v-if="isLoading && !recentDocs.length" class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+      <SkeletonLoader :rows="3" />
+    </div>
+
     <!-- 4 Kartu Statistik yang Mudah Dipahami -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
-        label="Total Dokumen Terkunci"
+        :label="t('dashboard.statLockedTitle')"
         :value="stats.metrics.encrypted_documents"
-        :subtitle="`Total kapasitas: ${formatBytes(stats.metrics.total_storage_bytes)}`"
+        :subtitle="t('dashboard.statLockedSub', { size: formatBytes(stats.metrics.total_storage_bytes) })"
       />
       <StatCard
-        label="Pengguna Siap Menerima File"
+        :label="t('dashboard.statReadyTitle')"
         :value="stats.metrics.active_keys"
-        :subtitle="`Dari ${stats.metrics.total_users} akun karyawan aktif`"
+        :subtitle="t('dashboard.statReadySub', { count: stats.metrics.total_users })"
       />
       <StatCard
-        label="Dokumen Berhasil Dibuka"
+        :label="t('dashboard.statDecryptedTitle')"
         :value="stats.metrics.total_decryptions"
-        subtitle="Keaslian isi dokumen terjamin"
+        :subtitle="t('dashboard.statDecryptedSub')"
       />
       <StatCard
-        label="Percobaan Manipulasi Ditolak"
+        :label="t('dashboard.statTamperTitle')"
         :value="stats.metrics.tamper_alerts"
-        subtitle="File rusak atau diubah pihak lain"
+        :subtitle="t('dashboard.statTamperSub')"
       />
     </div>
 
@@ -200,15 +204,19 @@ import { dashboardService } from "../services";
 import { DashboardResponseDTO, extractApiError } from "../dto";
 import { useAuthStore } from "../stores/auth";
 import { useFormatters } from "../composables/useFormatters";
+import { useAsync } from "../composables/useAsync";
+import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import StatCard from "../components/StatCard.vue";
 import PageHeader from "../components/PageHeader.vue";
 import DataTableCard from "../components/DataTableCard.vue";
 import StatusBadge from "../components/StatusBadge.vue";
 import MonoCopyBox from "../components/MonoCopyBox.vue";
+import SkeletonLoader from "../components/SkeletonLoader.vue";
 
 const authStore = useAuthStore();
 const toast = useToastStore();
+const { t } = useI18n();
 const {
   formatBytes,
   formatTime,
@@ -219,20 +227,19 @@ const {
   classificationBadge
 } = useFormatters();
 
-const isLoading = ref(false);
 const recentDocs = ref([]);
 const stats = ref(new DashboardResponseDTO());
+const { loading: isLoading, execute: runDashboardLoad } = useAsync(() =>
+  dashboardService.loadDashboardData()
+);
 
 async function loadDashboardData() {
-  isLoading.value = true;
   try {
-    const data = await dashboardService.loadDashboardData();
+    const data = await runDashboardLoad();
     stats.value = data.stats;
     recentDocs.value = data.recentDocs;
   } catch (err) {
     toast.show(extractApiError(err, "Gagal memuat data beranda."), "error");
-  } finally {
-    isLoading.value = false;
   }
 }
 

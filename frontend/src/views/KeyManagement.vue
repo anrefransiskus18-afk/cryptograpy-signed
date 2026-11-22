@@ -1,8 +1,8 @@
 <template>
   <div class="p-6 max-w-[1360px] mx-auto space-y-6">
     <PageHeader
-      title="Pengaturan Kunci Keamanan Saya"
-      subtitle="Setiap pengguna memiliki kunci digital unik untuk menerima dan membuka dokumen rahasia."
+      :title="t('keys.title')"
+      :subtitle="t('keys.subtitle')"
     />
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -200,6 +200,7 @@ import {
   extractApiError
 } from "../dto";
 import { useFormatters } from "../composables/useFormatters";
+import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import ConfirmModal from "../components/ConfirmModal.vue";
 import PageHeader from "../components/PageHeader.vue";
@@ -213,6 +214,7 @@ import { DEMO_KEY_PASSPHRASE } from "../config/demo";
 
 const emit = defineEmits(["auth-updated"]);
 const { formatRole, formatTime } = useFormatters();
+const { t } = useI18n();
 const toast = useToastStore();
 
 const keyReq = ref(new KeyPassphraseRequestDTO({ passphrase: DEMO_KEY_PASSPHRASE }));

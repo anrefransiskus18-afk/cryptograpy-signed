@@ -45,8 +45,21 @@ export default {
     loginError: "Failed to sign in."
   },
   dashboard: {
+    welcomeTitle: "Welcome, {name}",
     title: "Security Overview Dashboard",
     subtitle: "Monitor encrypted documents, security key readiness, and recent system activity.",
+    openDocument: "Decrypt Document (.enc)",
+    lockNewDocument: "+ Lock New Document",
+    statLockedTitle: "Total Encrypted Documents",
+    statLockedSub: "Total storage: {size}",
+    statReadyTitle: "Users Ready to Receive",
+    statReadySub: "Out of {count} active employee accounts",
+    statDecryptedTitle: "Documents Decrypted",
+    statDecryptedSub: "Document integrity verified",
+    statTamperTitle: "Tamper Attempts Blocked",
+    statTamperSub: "Corrupted or modified files rejected",
+    recentDocsTitle: "Recent Documents",
+    viewAllDocs: "View All Documents →",
     recentActivity: "Recent Activity",
     viewAllHistory: "View All History →",
     noRecentActivity: "No recent activity logs yet."
@@ -54,7 +67,8 @@ export default {
   documents: {
     title: "Encrypted Documents",
     subtitle: "Manage, download, or decrypt documents protected with AES-256-GCM & ECC P-256.",
-    encryptNew: "+ Lock New Document"
+    encryptNew: "+ Lock New Document",
+    searchPlaceholder: "Search file name or document UID..."
   },
   encrypt: {
     title: "Lock & Protect Document (Encrypt)",

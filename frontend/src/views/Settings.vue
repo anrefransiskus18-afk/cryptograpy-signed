@@ -2,9 +2,13 @@
   <div class="p-6 max-w-[1360px] mx-auto space-y-6">
     <!-- Header Halaman -->
     <PageHeader
-      title="Pengaturan Sistem &amp; Hasil Uji Performa"
-      subtitle="Informasi standar pengamanan yang digunakan sistem serta hasil pengujian kecepatan penguncian file."
+      :title="t('settings.title')"
+      :subtitle="t('settings.subtitle')"
     />
+
+    <div v-if="isLoading" class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+      <SkeletonLoader :rows="4" />
+    </div>
 
     <!-- Konfigurasi Kriptografi -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -142,19 +146,26 @@ import {
   extractApiError
 } from "../dto";
 import { useAuthStore } from "../stores/auth";
+import { useAsync } from "../composables/useAsync";
+import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import PageHeader from "../components/PageHeader.vue";
+import SkeletonLoader from "../components/SkeletonLoader.vue";
 
 const authStore = useAuthStore();
 const toast = useToastStore();
+const { t } = useI18n();
 
 const settings = ref(new SystemSettingsDTO());
 const benchmarks = ref(new BenchmarkResponseDTO());
 const isSaving = ref(false);
+const { loading: isLoading, execute: runSettingsLoad } = useAsync(() =>
+  settingsService.loadSettingsPageData()
+);
 
 async function loadData() {
   try {
-    const data = await settingsService.loadSettingsPageData();
+    const data = await runSettingsLoad();
     settings.value = data.settings;
     benchmarks.value = data.benchmarks;
   } catch (err) {

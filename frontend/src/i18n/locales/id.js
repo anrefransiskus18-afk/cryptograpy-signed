@@ -45,16 +45,30 @@ export default {
     loginError: "Gagal masuk ke sistem."
   },
   dashboard: {
+    welcomeTitle: "Selamat Datang, {name}",
     title: "Beranda & Ringkasan Keamanan",
-    subtitle: "Pantau status dokumen terkunci, kesiapan kunci keamanan, dan aktivitas terbaru.",
+    subtitle: "Pantau dokumen yang telah diamankan, kesiapan kunci keamanan Anda, dan aktivitas terbaru.",
+    openDocument: "Buka Dokumen (.enc)",
+    lockNewDocument: "+ Kunci Dokumen Baru",
+    statLockedTitle: "Total Dokumen Terkunci",
+    statLockedSub: "Total kapasitas: {size}",
+    statReadyTitle: "Pengguna Siap Menerima File",
+    statReadySub: "Dari {count} akun karyawan aktif",
+    statDecryptedTitle: "Dokumen Berhasil Dibuka",
+    statDecryptedSub: "Keaslian isi dokumen terjamin",
+    statTamperTitle: "Percobaan Manipulasi Ditolak",
+    statTamperSub: "File rusak atau diubah pihak lain",
+    recentDocsTitle: "Dokumen Terbaru",
+    viewAllDocs: "Lihat Semua Dokumen →",
     recentActivity: "Riwayat Aktivitas Terakhir",
     viewAllHistory: "Lihat Semua Riwayat →",
     noRecentActivity: "Belum ada riwayat aktivitas terbaru."
   },
   documents: {
-    title: "Daftar Dokumen Terenkripsi",
-    subtitle: "Kelola, unduh, atau buka dokumen yang diamankan dengan AES-256-GCM & ECC P-256.",
-    encryptNew: "+ Kunci Dokumen Baru"
+    title: "Daftar Dokumen Terkunci",
+    subtitle: "Kelola dokumen yang sudah diamankan (.enc), unduh file, atau buka isinya kembali.",
+    encryptNew: "+ Kunci Dokumen Baru",
+    searchPlaceholder: "Cari nama file atau kode dokumen..."
   },
   encrypt: {
     title: "Kunci & Amankan Dokumen (Enkripsi)",

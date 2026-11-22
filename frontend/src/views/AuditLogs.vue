@@ -2,25 +2,25 @@
   <div class="p-6 max-w-[1360px] mx-auto space-y-5">
     <!-- Header Halaman -->
     <PageHeader
-      title="Riwayat Aktivitas &amp; Keamanan"
-      subtitle="Catatan lengkap aktivitas penguncian dokumen, pembukaan dokumen, dan riwayat masuk pengguna."
+      :title="t('audit.title')"
+      :subtitle="t('audit.subtitle')"
     >
       <template #actions>
         <button
-          v-if="canVerifyChain"
+          v-if="canVerifyAuditChain"
           type="button"
           @click="verifyChain"
           :disabled="verifyingChain"
           class="h-9 px-3.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 cursor-pointer disabled:opacity-50"
         >
-          {{ verifyingChain ? "Memverifikasi..." : "Verifikasi Rantai Audit" }}
+          {{ verifyingChain ? t("audit.verifyingChain") : t("audit.verifyChain") }}
         </button>
         <button
           type="button"
           @click="exportCsv"
           class="h-9 px-3.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
         >
-          Unduh Laporan CSV
+          {{ t("audit.exportCsv") }}
         </button>
         <button
           type="button"
@@ -28,7 +28,7 @@
           @click="loadLogs"
           class="h-9 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white cursor-pointer disabled:opacity-50"
         >
-          {{ isLoading ? "Memuat..." : "Muat Ulang" }}
+          {{ isLoading ? t("common.loading") : t("common.reload") }}
         </button>
       </template>
     </PageHeader>
@@ -277,8 +277,9 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { auditService } from "../services";
 import { AuditFilterRequestDTO } from "../dto";
-import { useAuthStore } from "../stores/auth";
+import { usePermissions } from "../composables/usePermissions";
 import { useFormatters } from "../composables/useFormatters";
+import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import PageHeader from "../components/PageHeader.vue";
 import DataTableCard from "../components/DataTableCard.vue";
@@ -286,11 +287,10 @@ import StatusBadge from "../components/StatusBadge.vue";
 import BaseModal from "../components/BaseModal.vue";
 import MonoCopyBox from "../components/MonoCopyBox.vue";
 
-const authStore = useAuthStore();
+const { canVerifyAuditChain } = usePermissions();
 const { formatTime, formatAction, formatStatus, badgeClass, debounce } = useFormatters();
+const { t } = useI18n();
 const toast = useToastStore();
-
-const canVerifyChain = computed(() => authStore.isAdmin || authStore.user?.role === "EXECUTIVE");
 
 const activeTab = ref("crypto");
 const isLoading = ref(false);
