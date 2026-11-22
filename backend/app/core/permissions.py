@@ -42,15 +42,24 @@ def jwt_required(allowed_roles: Optional[List[str]] = None, min_clearance: int =
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
+            import hmac
             auth_header = request.headers.get("Authorization", "")
             token = ""
+            used_cookie_auth = False
             if auth_header.startswith("Bearer "):
                 token = auth_header.split(" ", 1)[1].strip()
             elif request.cookies.get("access_token_cookie"):
                 token = request.cookies.get("access_token_cookie", "").strip()
+                used_cookie_auth = True
 
             if not token:
                 return jsonify({"detail": "Sesi tidak ditemukan. Harap sertakan Bearer Token JWT."}), 401
+
+            if used_cookie_auth and request.method in ("POST", "PUT", "PATCH", "DELETE"):
+                csrf_cookie = request.cookies.get("csrf_token", "")
+                csrf_header = request.headers.get("X-CSRF-Token", "")
+                if not csrf_cookie or not csrf_header or not hmac.compare_digest(csrf_cookie, csrf_header):
+                    return jsonify({"detail": "Validasi CSRF gagal. Sertakan header X-CSRF-Token yang valid."}), 403
             try:
                 payload = decode_access_token(token)
             except ValueError as err:

@@ -8,15 +8,29 @@ function createCorrelationId() {
   return `req-${Date.now()}-${Math.trunc(performance.now() * 1000)}`;
 }
 
+function readCookie(name) {
+  if (typeof document === "undefined" || !document.cookie) return "";
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
 /**
  * Mendaftarkan Request & Response Interceptor pada instance Axios terpusat.
- * Menangani: JWT Bearer, Lazy.transform, Correlation ID, API latency telemetry, dan 401 session reset.
+ * Menangani: JWT Bearer, CSRF Double-Submit, Lazy.transform, Correlation ID, API latency telemetry, dan 401 session reset.
  */
 export function attachInterceptors(client) {
   client.interceptors.request.use((config) => {
     const token = localStorage.getItem("jwt_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    const method = (config.method || "get").toLowerCase();
+    if (["post", "put", "patch", "delete"].includes(method)) {
+      const csrf = readCookie("csrf_token");
+      if (csrf && !config.headers["X-CSRF-Token"]) {
+        config.headers["X-CSRF-Token"] = csrf;
+      }
     }
 
     const correlationId = config.headers["X-Correlation-ID"] || createCorrelationId();

@@ -51,7 +51,12 @@ _AUDIT_LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 
 class _CrossProcessLock:
-    """Menggabungkan threading.Lock dan fcntl.flock (POSIX) untuk serialisasi multi-worker."""
+    """Menggabungkan threading.Lock, POSIX fcntl.flock, dan MySQL advisory lock."""
+    def __init__(self, db: Session | None = None):
+        self._db = db
+        self._mysql_locked = False
+        self._fp = None
+
     def __enter__(self):
         _AUDIT_CHAIN_LOCK.acquire()
         self._fp = open(_AUDIT_LOCK_FILE, "a+")
@@ -60,16 +65,32 @@ class _CrossProcessLock:
             fcntl.flock(self._fp.fileno(), fcntl.LOCK_EX)
         except ImportError:
             pass
+        if self._db is not None:
+            try:
+                bind = self._db.get_bind()
+                if bind is not None and bind.dialect.name == "mysql":
+                    from sqlalchemy import text
+                    res = self._db.execute(text("SELECT GET_LOCK('audit_hash_chain_lock', 10)")).scalar()
+                    self._mysql_locked = bool(res == 1)
+            except Exception:
+                self._mysql_locked = False
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         try:
+            if self._mysql_locked and self._db is not None:
+                try:
+                    from sqlalchemy import text
+                    self._db.execute(text("SELECT RELEASE_LOCK('audit_hash_chain_lock')"))
+                except Exception:
+                    pass
             try:
                 import fcntl
                 fcntl.flock(self._fp.fileno(), fcntl.LOCK_UN)
             except ImportError:
                 pass
-            self._fp.close()
+            if self._fp is not None:
+                self._fp.close()
         finally:
             _AUDIT_CHAIN_LOCK.release()
 
@@ -134,8 +155,8 @@ class AuditService:
         if status == "SUCCESS" and action_type in ("TAMPER_DETECTED", "DECRYPTION_FAILED", "UNAUTHORIZED_ACCESS"):
             status = "ALERT" if action_type == "TAMPER_DETECTED" else "FAILURE"
 
-        # Seksi kritis: baca log terakhir -> tandatangani -> simpan harus atomik lintas thread & worker
-        with _CrossProcessLock():
+        # Seksi kritis: baca log terakhir -> tandatangani -> simpan harus atomik lintas thread & container
+        with _CrossProcessLock(db):
             last_log = db.query(AuditLog).order_by(AuditLog.id.desc()).first()
             if last_log:
                 prev_payload = f"{last_log.id}|{last_log.timestamp.replace(microsecond=0).isoformat()}|{last_log.server_signature}"

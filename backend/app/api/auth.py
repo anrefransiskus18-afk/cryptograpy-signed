@@ -184,12 +184,24 @@ def handle_login():
             LoginResponseDTO,
             serialize=True,
         )
+        import secrets as _secrets
+
+        csrf_token = _secrets.token_hex(24)
         response = jsonify(res_payload)
         response.set_cookie(
             "access_token_cookie",
             access_token,
             max_age=Config.JWT_ACCESS_TOKEN_EXPIRES_MINUTES * 60,
             httponly=True,
+            secure=Config.IS_PRODUCTION,
+            samesite="Lax",
+            path="/",
+        )
+        response.set_cookie(
+            "csrf_token",
+            csrf_token,
+            max_age=Config.JWT_ACCESS_TOKEN_EXPIRES_MINUTES * 60,
+            httponly=False,
             secure=Config.IS_PRODUCTION,
             samesite="Lax",
             path="/",
@@ -226,6 +238,7 @@ def handle_logout():
         )
         response = jsonify({"message": "Logout berhasil. Token sesi telah dicabut."})
         response.delete_cookie("access_token_cookie", path="/")
+        response.delete_cookie("csrf_token", path="/")
         return response
     finally:
         db.close()

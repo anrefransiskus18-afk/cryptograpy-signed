@@ -1,10 +1,12 @@
 <template>
   <div
     v-if="open"
+    ref="dialogRef"
+    tabindex="-1"
     role="dialog"
     aria-modal="true"
     @click.self="$emit('close')"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 outline-none"
   >
     <div :class="[maxWidth, 'bg-white border border-slate-200 rounded-xl w-full p-5 shadow-xl space-y-4']">
       <div class="flex items-center justify-between border-b border-slate-200 pb-3 gap-3">
@@ -36,7 +38,7 @@
 </template>
 
 <script setup>
-import { watch, onBeforeUnmount } from "vue";
+import { ref, watch, nextTick, onBeforeUnmount } from "vue";
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -46,6 +48,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["close"]);
+const dialogRef = ref(null);
+let previouslyFocused = null;
 
 function handleKeydown(e) {
   if (e.key === "Escape" && props.open) {
@@ -55,15 +59,25 @@ function handleKeydown(e) {
 
 watch(
   () => props.open,
-  (isOpen) => {
+  async (isOpen) => {
+    if (typeof window === "undefined") return;
     if (isOpen) {
+      previouslyFocused = typeof document !== "undefined" ? document.activeElement : null;
       window.addEventListener("keydown", handleKeydown);
+      await nextTick();
+      dialogRef.value?.focus?.();
     } else {
       window.removeEventListener("keydown", handleKeydown);
+      previouslyFocused?.focus?.();
+      previouslyFocused = null;
     }
   },
   { immediate: true }
 );
 
-onBeforeUnmount(() => window.removeEventListener("keydown", handleKeydown));
+onBeforeUnmount(() => {
+  if (typeof window !== "undefined") {
+    window.removeEventListener("keydown", handleKeydown);
+  }
+});
 </script>

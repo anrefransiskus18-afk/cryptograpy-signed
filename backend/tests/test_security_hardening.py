@@ -58,6 +58,19 @@ def test_metrics_endpoint_and_httponly_cookie_auth():
         "clearance_level": 4,
     })
     client.set_cookie("access_token_cookie", token)
+    client.set_cookie("csrf_token", "test-csrf-secret")
     me_res = client.get("/api/v1/me")
     assert me_res.status_code == 200
     assert me_res.get_json()["username"] == "admin.security"
+
+    # Cookie-based mutation without X-CSRF-Token must be rejected (403)
+    csrf_fail = client.put("/api/v1/me", json={"department": "Keamanan"})
+    assert csrf_fail.status_code == 403
+
+    # Cookie-based mutation with matching X-CSRF-Token succeeds (200)
+    csrf_ok = client.put(
+        "/api/v1/me",
+        json={"department": "Divisi Keamanan Informasi"},
+        headers={"X-CSRF-Token": "test-csrf-secret"},
+    )
+    assert csrf_ok.status_code == 200

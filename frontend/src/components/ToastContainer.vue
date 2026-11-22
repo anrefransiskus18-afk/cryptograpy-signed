@@ -1,8 +1,13 @@
 <template>
-  <div class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0">
+  <div
+    aria-live="polite"
+    aria-atomic="true"
+    class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0"
+  >
     <div
       v-for="t in toastStore.toasts"
       :key="t.id"
+      role="status"
       class="pointer-events-auto flex items-start justify-between gap-3 p-4 rounded-xl border shadow-xl transition-all bg-white"
       :class="toastStyle(t.type)"
     >

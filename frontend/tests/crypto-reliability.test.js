@@ -232,3 +232,14 @@ test("useTheme and usePermissions behave predictably", async () => {
   assert.equal(perms.hasClearance(3), true);
   assert.equal(perms.hasClearance(4), false);
 });
+
+test("flipLastBitInContainer flips exactly 1 bit using Blob.slice", async () => {
+  const { flipLastBitInContainer } = await import("../src/utils/crypto/tamperSimulator.js");
+  const orig = new File([new Uint8Array([0x48, 0x43, 0x30, 0x31, 0xaa])], "doc.enc", {
+    type: "application/octet-stream"
+  });
+  const tampered = await flipLastBitInContainer(orig);
+  assert.equal(tampered.name, "RUSAK_doc.enc");
+  const bytes = new Uint8Array(await tampered.arrayBuffer());
+  assert.deepEqual([...bytes], [0x48, 0x43, 0x30, 0x31, 0xab]);
+});

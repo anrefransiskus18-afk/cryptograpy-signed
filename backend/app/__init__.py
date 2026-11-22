@@ -223,7 +223,7 @@ def create_app() -> Flask:
         allowed_origin = _resolve_cors_origin(request.headers.get("Origin"))
         if allowed_origin:
             response.headers["Access-Control-Allow-Origin"] = allowed_origin
-            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Correlation-ID"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Correlation-ID, X-CSRF-Token"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
             response.headers["Access-Control-Expose-Headers"] = (
                 "Content-Disposition, X-Container-Header, X-Recipient-Fingerprint, "
@@ -238,6 +238,8 @@ def create_app() -> Flask:
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "SAMEORIGIN"
         response.headers["Referrer-Policy"] = "no-referrer"
+        if Config.IS_PRODUCTION and request.is_secure:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         # Respons API memuat data sensitif: jangan biarkan browser / proxy menyimpannya di cache
         if request.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"

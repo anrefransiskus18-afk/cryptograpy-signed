@@ -131,7 +131,7 @@ def list_documents():
 def get_document_detail(doc_id: int):
     db = get_db_session()
     try:
-        doc = db.query(Document).filter(Document.id == doc_id, Document.is_deleted == False).first()
+        doc = DocumentRepository.get_active_by_id(db, doc_id)
         if not doc:
             return jsonify({"detail": "Dokumen tidak ditemukan."}), 404
         if not _user_can_access_doc(doc, g.current_user):
@@ -147,7 +147,7 @@ def get_document_detail(doc_id: int):
 def download_encrypted_document(doc_id: int):
     db = get_db_session()
     try:
-        doc = db.query(Document).filter(Document.id == doc_id, Document.is_deleted == False).first()
+        doc = DocumentRepository.get_active_by_id(db, doc_id)
         if not doc:
             return jsonify({"detail": "Dokumen tidak ditemukan."}), 404
         if not _user_can_access_doc(doc, g.current_user):
@@ -195,7 +195,7 @@ def download_encrypted_document(doc_id: int):
 def delete_document(doc_id: int):
     db = get_db_session()
     try:
-        doc = db.query(Document).filter(Document.id == doc_id, Document.is_deleted == False).first()
+        doc = DocumentRepository.get_active_by_id(db, doc_id)
         if not doc:
             return jsonify({"detail": "Dokumen tidak ditemukan."}), 404
         if doc.sender_id != g.current_user["id"] and not is_admin_user(g.current_user):
