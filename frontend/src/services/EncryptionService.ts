@@ -76,10 +76,10 @@ export class EncryptionService {
   }
 
   async encrypt(
-    payload: EncryptDocumentRequestDTO | Record<string, any>,
+    payload: EncryptDocumentRequestDTO | Record<string, unknown>,
     onProgress?: (percent: number) => void
   ): Promise<EncryptResultResponseDTO> {
-    this.validateFile(payload?.document);
+    this.validateFile((payload?.document ?? null) as File | null);
     if (!payload?.recipient_key_id) {
       throw new AppError("Penerima dokumen wajib dipilih.", { type: ErrorType.VALIDATION });
     }

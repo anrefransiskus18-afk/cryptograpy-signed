@@ -1,4 +1,4 @@
-import { keyRepository, type KeyRepository } from "../repositories";
+import { keyRepository, type KeyRepository, type RepositoryRequestConfig } from "../repositories";
 import { useAuthStore } from "../stores/auth";
 import { authService, type AuthService } from "./AuthService";
 import { AppError, ErrorType } from "../utils/errors";
@@ -27,12 +27,12 @@ export class KeyService {
     this.authService = authSvc;
   }
 
-  listPublicKeys(): Promise<PublicKeyDirectoryItemDTO[]> {
-    return this.repository.listPublicKeys();
+  listPublicKeys(config: RepositoryRequestConfig = {}): Promise<PublicKeyDirectoryItemDTO[]> {
+    return this.repository.listPublicKeys(config);
   }
 
-  getMyKey(): Promise<MyKeyStatusResponseDTO> {
-    return this.repository.getMyKey();
+  getMyKey(config: RepositoryRequestConfig = {}): Promise<MyKeyStatusResponseDTO> {
+    return this.repository.getMyKey(config);
   }
 
   async loadKeyPageData(): Promise<{
@@ -58,10 +58,11 @@ export class KeyService {
   }
 
   async generateOrRotateKey(
-    payload: KeyPassphraseRequestDTO | Record<string, any>,
+    payload: KeyPassphraseRequestDTO | Record<string, unknown>,
     isRotation = true
   ): Promise<KeyPairGeneratedResponseDTO> {
-    this.validatePassphrase(payload?.passphrase);
+    const passphrase = typeof payload?.passphrase === "string" ? payload.passphrase : "";
+    this.validatePassphrase(passphrase);
     const resDto = isRotation
       ? await this.repository.rotate(payload)
       : await this.repository.generate(payload);
@@ -71,7 +72,7 @@ export class KeyService {
     return resDto;
   }
 
-  verifyOwnership(payload: VerifyKeyRequestDTO | Record<string, any>): Promise<VerifyKeyResponseDTO> {
+  verifyOwnership(payload: VerifyKeyRequestDTO | Record<string, unknown>): Promise<VerifyKeyResponseDTO> {
     return this.repository.verify(payload);
   }
 

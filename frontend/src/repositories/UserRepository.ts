@@ -11,7 +11,7 @@ import type { MessageResponse } from "../types/domain";
 
 export class UserRepository extends BaseRepository {
   list(
-    params: UserFilterRequestDTO | Record<string, any> = {},
+    params: UserFilterRequestDTO | Record<string, unknown> = {},
     config: RepositoryRequestConfig = {}
   ): Promise<UserResponseDTO[]> {
     return this.get<UserResponseDTO[]>(API_ENDPOINTS.USERS.BASE, {
@@ -22,7 +22,7 @@ export class UserRepository extends BaseRepository {
     });
   }
 
-  create(payload: CreateUserRequestDTO | Record<string, any>): Promise<UserMutationResponseDTO> {
+  create(payload: CreateUserRequestDTO | Record<string, unknown>): Promise<UserMutationResponseDTO> {
     return this.post<UserMutationResponseDTO>(API_ENDPOINTS.USERS.BASE, payload, {
       requestStruct: CreateUserRequestDTO,
       responseStruct: UserMutationResponseDTO
@@ -31,7 +31,7 @@ export class UserRepository extends BaseRepository {
 
   update(
     userId: number | string,
-    payload: UpdateUserRequestDTO | Record<string, any>
+    payload: UpdateUserRequestDTO | Record<string, unknown>
   ): Promise<UserMutationResponseDTO> {
     return this.put<UserMutationResponseDTO>(API_ENDPOINTS.USERS.BY_ID(userId), payload, {
       requestStruct: UpdateUserRequestDTO,

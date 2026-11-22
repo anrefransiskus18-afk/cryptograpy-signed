@@ -10,7 +10,7 @@ import {
 import type { ChangePasswordResponse, MessageResponse } from "../types/domain";
 
 export class AuthRepository extends BaseRepository {
-  login(payload: LoginRequestDTO | Record<string, any>): Promise<LoginResponseDTO> {
+  login(payload: LoginRequestDTO | Record<string, unknown>): Promise<LoginResponseDTO> {
     return this.post<LoginResponseDTO>(API_ENDPOINTS.AUTH.LOGIN, payload, {
       requestStruct: LoginRequestDTO,
       responseStruct: LoginResponseDTO
@@ -28,14 +28,14 @@ export class AuthRepository extends BaseRepository {
     });
   }
 
-  updateMe(payload: UpdateProfileRequestDTO | Record<string, any>): Promise<UserProfileDTO> {
+  updateMe(payload: UpdateProfileRequestDTO | Record<string, unknown>): Promise<UserProfileDTO> {
     return this.put<UserProfileDTO>(API_ENDPOINTS.AUTH.ME, payload, {
       requestStruct: UpdateProfileRequestDTO,
       responseStruct: UserProfileDTO
     });
   }
 
-  changePassword(payload: ChangePasswordRequestDTO | Record<string, any>): Promise<ChangePasswordResponse> {
+  changePassword(payload: ChangePasswordRequestDTO | Record<string, unknown>): Promise<ChangePasswordResponse> {
     return this.post<ChangePasswordResponse>(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, payload, {
       requestStruct: ChangePasswordRequestDTO
     });

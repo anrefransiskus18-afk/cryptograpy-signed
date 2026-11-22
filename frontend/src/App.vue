@@ -2,12 +2,16 @@
   <div class="h-screen w-screen overflow-hidden bg-slate-50 text-slate-800 flex flex-col">
     <!-- Halaman Login -->
     <div v-if="isLoginPage" class="h-full w-full overflow-y-auto">
-      <router-view @auth-updated="refreshUserState" />
+      <ErrorBoundary>
+        <router-view @auth-updated="refreshUserState" />
+      </ErrorBoundary>
     </div>
 
     <!-- Layout Aplikasi Utama -->
     <MainLayout v-else>
-      <router-view @auth-updated="refreshUserState" />
+      <ErrorBoundary>
+        <router-view @auth-updated="refreshUserState" />
+      </ErrorBoundary>
     </MainLayout>
 
     <ToastContainer />
@@ -20,6 +24,7 @@ import { useRoute } from "vue-router";
 import { useAuthStore } from "./stores/auth";
 import MainLayout from "./layouts/MainLayout.vue";
 import ToastContainer from "./components/ToastContainer.vue";
+import ErrorBoundary from "./components/ErrorBoundary.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();

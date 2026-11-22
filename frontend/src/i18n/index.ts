@@ -32,15 +32,20 @@ export function setLocale(nextLocale: SupportedLocale): void {
   }
 }
 
-function resolvePath(obj: Record<string, any>, path: string): unknown {
-  return path.split(".").reduce<any>((acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined), obj);
+function resolvePath(obj: Record<string, unknown>, path: string): unknown {
+  return path.split(".").reduce<unknown>((acc, part) => {
+    if (acc && typeof acc === "object" && !Array.isArray(acc)) {
+      return (acc as Record<string, unknown>)[part];
+    }
+    return undefined;
+  }, obj);
 }
 
 export function t(key: string, params: Record<string, unknown> = {}): string {
   const currentPack = messages[locale.value] || messages.id;
-  let template = resolvePath(currentPack as Record<string, any>, key);
+  let template = resolvePath(currentPack as Record<string, unknown>, key);
   if (template === undefined) {
-    template = resolvePath(messages.id as Record<string, any>, key);
+    template = resolvePath(messages.id as Record<string, unknown>, key);
   }
   if (typeof template !== "string") {
     return key;

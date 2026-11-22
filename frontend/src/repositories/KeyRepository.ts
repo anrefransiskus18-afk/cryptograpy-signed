@@ -24,21 +24,21 @@ export class KeyRepository extends BaseRepository {
     });
   }
 
-  generate(payload: KeyPassphraseRequestDTO | Record<string, any>): Promise<KeyPairGeneratedResponseDTO> {
+  generate(payload: KeyPassphraseRequestDTO | Record<string, unknown>): Promise<KeyPairGeneratedResponseDTO> {
     return this.post<KeyPairGeneratedResponseDTO>(API_ENDPOINTS.KEYS.GENERATE, payload, {
       requestStruct: KeyPassphraseRequestDTO,
       responseStruct: KeyPairGeneratedResponseDTO
     });
   }
 
-  rotate(payload: KeyPassphraseRequestDTO | Record<string, any>): Promise<KeyPairGeneratedResponseDTO> {
+  rotate(payload: KeyPassphraseRequestDTO | Record<string, unknown>): Promise<KeyPairGeneratedResponseDTO> {
     return this.post<KeyPairGeneratedResponseDTO>(API_ENDPOINTS.KEYS.ROTATE, payload, {
       requestStruct: KeyPassphraseRequestDTO,
       responseStruct: KeyPairGeneratedResponseDTO
     });
   }
 
-  verify(payload: VerifyKeyRequestDTO | Record<string, any>): Promise<VerifyKeyResponseDTO> {
+  verify(payload: VerifyKeyRequestDTO | Record<string, unknown>): Promise<VerifyKeyResponseDTO> {
     return this.post<VerifyKeyResponseDTO>(API_ENDPOINTS.KEYS.VERIFY, payload, {
       requestStruct: VerifyKeyRequestDTO,
       responseStruct: VerifyKeyResponseDTO

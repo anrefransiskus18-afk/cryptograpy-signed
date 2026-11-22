@@ -48,7 +48,7 @@ export class BaseRepository {
     throw normalizeApiError(lastError);
   }
 
-  async get<T = any>(url: string, config: RepositoryRequestConfig = {}): Promise<T> {
+  async get<T = unknown>(url: string, config: RepositoryRequestConfig = {}): Promise<T> {
     const retries = config.retries ?? 1;
     const dedupeKey = this._buildGetKey(url, config);
     if (dedupeKey && this._inFlightGets.has(dedupeKey)) {
@@ -70,7 +70,7 @@ export class BaseRepository {
     }
   }
 
-  async post<T = any>(url: string, data: unknown = null, config: RepositoryRequestConfig = {}): Promise<T> {
+  async post<T = unknown>(url: string, data: unknown = null, config: RepositoryRequestConfig = {}): Promise<T> {
     try {
       const response = await this.client.post<T>(url, data, config);
       return response.data;
@@ -79,7 +79,7 @@ export class BaseRepository {
     }
   }
 
-  async put<T = any>(url: string, data: unknown = null, config: RepositoryRequestConfig = {}): Promise<T> {
+  async put<T = unknown>(url: string, data: unknown = null, config: RepositoryRequestConfig = {}): Promise<T> {
     try {
       const response = await this.client.put<T>(url, data, config);
       return response.data;
@@ -88,7 +88,7 @@ export class BaseRepository {
     }
   }
 
-  async patch<T = any>(url: string, data: unknown = null, config: RepositoryRequestConfig = {}): Promise<T> {
+  async patch<T = unknown>(url: string, data: unknown = null, config: RepositoryRequestConfig = {}): Promise<T> {
     try {
       const response = await this.client.patch<T>(url, data, config);
       return response.data;
@@ -97,7 +97,7 @@ export class BaseRepository {
     }
   }
 
-  async delete<T = any>(url: string, config: RepositoryRequestConfig = {}): Promise<T> {
+  async delete<T = unknown>(url: string, config: RepositoryRequestConfig = {}): Promise<T> {
     try {
       const response = await this.client.delete<T>(url, config);
       return response.data;

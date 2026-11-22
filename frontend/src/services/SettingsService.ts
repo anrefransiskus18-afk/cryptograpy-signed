@@ -1,4 +1,4 @@
-import { settingsRepository, type SettingsRepository } from "../repositories";
+import { settingsRepository, type SettingsRepository, type RepositoryRequestConfig } from "../repositories";
 import type { BenchmarkResponseDTO, SystemSettingsDTO, UpdateSettingsRequestDTO } from "../dto";
 
 export class SettingsService {
@@ -8,18 +8,18 @@ export class SettingsService {
     this.repository = repository;
   }
 
-  async loadSettingsPageData(): Promise<{
+  async loadSettingsPageData(config: RepositoryRequestConfig = {}): Promise<{
     settings: SystemSettingsDTO;
     benchmarks: BenchmarkResponseDTO;
   }> {
     const [settings, benchmarks] = await Promise.all([
-      this.repository.getSettings(),
-      this.repository.getBenchmarks()
+      this.repository.getSettings(config),
+      this.repository.getBenchmarks(config)
     ]);
     return { settings, benchmarks };
   }
 
-  updateSettings(payload: UpdateSettingsRequestDTO | Record<string, any>): Promise<SystemSettingsDTO> {
+  updateSettings(payload: UpdateSettingsRequestDTO | Record<string, unknown>): Promise<SystemSettingsDTO> {
     return this.repository.updateSettings(payload);
   }
 }

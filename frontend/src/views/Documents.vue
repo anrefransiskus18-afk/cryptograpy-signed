@@ -251,6 +251,7 @@ import { usePermissions } from "../composables/usePermissions";
 import { useFormatters } from "../composables/useFormatters";
 import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
+import { isCanceledError } from "../utils/validators";
 import FilterToolbar from "../components/FilterToolbar.vue";
 import BaseSelect from "../components/BaseSelect.vue";
 import BaseButton from "../components/BaseButton.vue";
@@ -282,16 +283,26 @@ const docToDelete = ref<DocumentResponseDTO | null>(null);
 
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / filterReq.value.per_page)));
 
+let listAbortController: AbortController | null = null;
+
 async function loadDocuments() {
+  listAbortController?.abort();
+  listAbortController = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const controller = listAbortController;
   isLoading.value = true;
   try {
-    const resDto = await documentService.list(filterReq.value);
+    const resDto = await documentService.list(filterReq.value, {
+      signal: controller?.signal
+    });
     documents.value = resDto.items;
     totalItems.value = resDto.total ?? resDto.items.length;
-  } catch {
+  } catch (err: unknown) {
+    if (isCanceledError(err)) return;
     toast.show("Gagal memuat daftar dokumen.", "error");
   } finally {
-    isLoading.value = false;
+    if (listAbortController === controller) {
+      isLoading.value = false;
+    }
   }
 }
 
@@ -355,6 +366,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  listAbortController?.abort();
   debouncedSearch.cancel?.();
 });
 </script>

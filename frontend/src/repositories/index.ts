@@ -1,4 +1,4 @@
-export { BaseRepository } from "./BaseRepository";
+export { BaseRepository, type RepositoryRequestConfig } from "./BaseRepository";
 export { AuthRepository, authRepository } from "./AuthRepository";
 export { CryptoRepository, cryptoRepository } from "./CryptoRepository";
 export { DocumentRepository, documentRepository } from "./DocumentRepository";

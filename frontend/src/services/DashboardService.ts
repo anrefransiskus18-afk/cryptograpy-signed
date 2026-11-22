@@ -2,7 +2,8 @@ import {
   dashboardRepository,
   documentRepository,
   type DashboardRepository,
-  type DocumentRepository
+  type DocumentRepository,
+  type RepositoryRequestConfig
 } from "../repositories";
 import { DocumentFilterRequestDTO, type DashboardResponseDTO, type DocumentResponseDTO } from "../dto";
 
@@ -18,13 +19,13 @@ export class DashboardService {
     this.documentRepo = docRepo;
   }
 
-  async loadDashboardData(): Promise<{
+  async loadDashboardData(config: RepositoryRequestConfig = {}): Promise<{
     stats: DashboardResponseDTO;
     recentDocs: DocumentResponseDTO[];
   }> {
     const [stats, docListDto] = await Promise.all([
-      this.dashboardRepo.getStats(),
-      this.documentRepo.list(new DocumentFilterRequestDTO({ per_page: 5 }))
+      this.dashboardRepo.getStats(config),
+      this.documentRepo.list(new DocumentFilterRequestDTO({ per_page: 5 }), config)
     ]);
     return {
       stats,

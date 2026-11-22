@@ -146,133 +146,24 @@
     </DataTableCard>
 
     <!-- Modal Tambah Pengguna -->
-    <BaseModal
+    <UserCreateModal
       :open="showCreateModal"
-      title="Tambah Karyawan / Pengguna Baru"
-      maxWidth="max-w-lg"
+      :model="newUserReq"
+      :roleOptions="ROLE_OPTIONS"
+      :submitting="isSubmitting"
       @close="showCreateModal = false"
-    >
-      <form @submit.prevent="submitCreateUser" class="space-y-3 text-xs">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Username Login</label>
-              <input v-model="newUserReq.username" required placeholder="staf.keuangan" class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900" />
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Nomor Induk Karyawan (NIK)</label>
-              <input v-model="newUserReq.nik" placeholder="Contoh: XYZ-OPS-005" class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Nama Lengkap</label>
-              <input v-model="newUserReq.full_name" required placeholder="Nama lengkap karyawan" class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900" />
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Email Kantor</label>
-              <input v-model="newUserReq.email" type="email" required placeholder="nama@pt-xyz.co.id" class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Unit / Departemen</label>
-              <input v-model="newUserReq.department" required class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900" />
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Peran &amp; Tingkat Akses</label>
-              <select v-model="newUserReq.role" class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900">
-                <option v-for="opt in ROLE_OPTIONS" :key="opt.value" :value="opt.value">
-                  {{ opt.label }}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <PasswordInput
-              v-model="newUserReq.password"
-              label="Kata Sandi Login"
-              placeholder="Minimal 8 karakter"
-              required
-            />
-            <PasswordInput
-              v-model="newUserReq.key_passphrase"
-              label="Kata Sandi Kunci Keamanan"
-              placeholder="Minimal 8 karakter"
-              required
-            />
-          </div>
-
-          <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-            <button type="button" @click="showCreateModal = false" class="h-9 px-3.5 rounded-lg bg-slate-100 text-slate-700 font-semibold cursor-pointer">
-              Batal
-            </button>
-            <button type="submit" :disabled="isSubmitting" class="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold cursor-pointer">
-              {{ isSubmitting ? "Menyimpan..." : "Simpan Pengguna" }}
-            </button>
-          </div>
-      </form>
-    </BaseModal>
+      @submit="submitCreateUser"
+    />
 
     <!-- Modal Ubah Data Pengguna -->
-    <BaseModal
-      :open="Boolean(editingUser)"
-      title="Ubah Data Pengguna"
-      :subtitle="editingUser ? `@${editingUser.username}` : ''"
-      maxWidth="max-w-lg"
+    <UserEditModal
+      :user="editingUser"
+      :model="editUserReq"
+      :roleOptions="ROLE_OPTIONS"
+      :submitting="isSubmitting"
       @close="editingUser = null"
-    >
-      <form @submit.prevent="submitEditUser" class="space-y-3 text-xs">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Nama Lengkap</label>
-              <input v-model="editUserReq.full_name" required class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900" />
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Nomor Induk Karyawan (NIK)</label>
-              <input v-model="editUserReq.nik" class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Email Kantor</label>
-              <input v-model="editUserReq.email" type="email" required class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900" />
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Unit / Departemen</label>
-              <input v-model="editUserReq.department" required class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Peran &amp; Tingkat Akses</label>
-              <select v-model="editUserReq.role" class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-slate-900">
-                <option v-for="opt in ROLE_OPTIONS" :key="opt.value" :value="opt.value">
-                  {{ opt.label }}
-                </option>
-              </select>
-            </div>
-            <PasswordInput
-              v-model="editUserReq.password"
-              label="Reset Sandi Login (Opsional)"
-              placeholder="Kosongkan jika tidak diubah"
-            />
-          </div>
-
-          <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-            <button type="button" @click="editingUser = null" class="h-9 px-3.5 rounded-lg bg-slate-100 text-slate-700 font-semibold cursor-pointer">
-              Batal
-            </button>
-            <button type="submit" :disabled="isSubmitting" class="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold cursor-pointer">
-              {{ isSubmitting ? "Menyimpan..." : "Simpan Perubahan" }}
-            </button>
-          </div>
-      </form>
-    </BaseModal>
+      @submit="submitEditUser"
+    />
 
     <!-- Modal Perbarui Kunci / Pulihkan Pengguna -->
     <BaseModal
@@ -363,6 +254,9 @@ import BaseModal from "../components/BaseModal.vue";
 import PasswordInput from "../components/PasswordInput.vue";
 import FilterToolbar from "../components/FilterToolbar.vue";
 import BaseSelect from "../components/BaseSelect.vue";
+import UserCreateModal from "../components/users/UserCreateModal.vue";
+import UserEditModal from "../components/users/UserEditModal.vue";
+import { isCanceledError } from "../utils/validators";
 import { DEMO_KEY_PASSPHRASE } from "../config/demo";
 
 const authStore = useAuthStore();
@@ -393,14 +287,24 @@ const userToDelete = ref<UserResponseDTO | null>(null);
 const userToDeactivate = ref<UserResponseDTO | null>(null);
 const isSubmitting = ref(false);
 
+let listAbortController: AbortController | null = null;
+
 async function loadUsers() {
+  listAbortController?.abort();
+  listAbortController = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const controller = listAbortController;
   isLoading.value = true;
   try {
-    users.value = await userService.list(filterReq.value);
-  } catch {
+    users.value = await userService.list(filterReq.value, {
+      signal: controller?.signal
+    });
+  } catch (err: unknown) {
+    if (isCanceledError(err)) return;
     toast.show("Gagal memuat daftar pengguna.", "error");
   } finally {
-    isLoading.value = false;
+    if (listAbortController === controller) {
+      isLoading.value = false;
+    }
   }
 }
 
@@ -529,6 +433,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  listAbortController?.abort();
   debouncedLoadUsers.cancel?.();
 });
 </script>

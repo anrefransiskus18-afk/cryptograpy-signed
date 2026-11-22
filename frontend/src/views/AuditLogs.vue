@@ -221,55 +221,8 @@
     </DataTableCard>
 
     <!-- Modal Detail Bukti Kriptografi Audit Log -->
-    <BaseModal
-      :open="Boolean(selectedLog)"
-      :title="`Rincian Catatan & Bukti Keaslian (#${selectedLog?.id})`"
-      :subtitle="selectedLog ? `${formatAction(selectedLog.action_type)} • ${formatTime(selectedLog.timestamp)}` : ''"
-      maxWidth="max-w-xl"
-      @close="selectedLog = null"
-    >
-      <div v-if="selectedLog" class="space-y-2.5 text-xs">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <div class="text-slate-400">Pelaku &amp; Alamat IP</div>
-            <div class="font-semibold text-slate-900 mt-0.5">{{ selectedLog.actor_identity }} ({{ selectedLog.ip_address }})</div>
-          </div>
-          <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <div class="text-slate-400">Status Verifikasi ECDSA P-256</div>
-            <div class="font-semibold mt-0.5" :class="selectedLog.signature_verified ? 'text-emerald-700' : 'text-rose-700'">
-              {{ selectedLog.signature_verified ? "Valid & Tidak Dimanipulasi" : "Tidak Valid" }}
-            </div>
-          </div>
-        </div>
-
-        <MonoCopyBox
-          label="Hash Rantai Sebelumnya (SHA-256 Hash Chain)"
-          :value="selectedLog.prev_log_hash || ''"
-          :copyable="false"
-        />
-
-        <MonoCopyBox
-          label="Tanda Tangan Digital Server (ECDSA P-256)"
-          :value="selectedLog.server_signature || ''"
-          copyLabel="Tanda tangan ECDSA"
-        />
-
-        <div v-if="selectedLog.metadata && Object.keys(selectedLog.metadata).length" class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
-          <div class="text-slate-400">Rincian Tambahan (Metadata)</div>
-          <pre class="font-mono text-[11px] text-slate-700 whitespace-pre-wrap break-all">{{ JSON.stringify(selectedLog.metadata, null, 2) }}</pre>
-        </div>
-      </div>
-
-      <template #footer>
-        <button
-          type="button"
-          @click="selectedLog = null"
-          class="h-8 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold cursor-pointer"
-        >
-          Tutup
-        </button>
-      </template>
-    </BaseModal>
+    <!-- Modal Rincian Integritas Log -->
+    <AuditDetailModal :log="selectedLog" @close="selectedLog = null" />
   </div>
 </template>
 
@@ -284,8 +237,8 @@ import { useToastStore } from "../stores/toast";
 import PageHeader from "../components/PageHeader.vue";
 import DataTableCard from "../components/DataTableCard.vue";
 import StatusBadge from "../components/StatusBadge.vue";
-import BaseModal from "../components/BaseModal.vue";
-import MonoCopyBox from "../components/MonoCopyBox.vue";
+import AuditDetailModal from "../components/audit/AuditDetailModal.vue";
+import { isCanceledError } from "../utils/validators";
 
 const { canVerifyAuditChain } = usePermissions();
 const { formatTime, formatAction, formatStatus, badgeClass, debounce } = useFormatters();
@@ -353,16 +306,26 @@ const filteredAuthLogs = computed(() => {
   });
 });
 
+let logsAbortController: AbortController | null = null;
+
 async function loadLogs() {
+  logsAbortController?.abort();
+  logsAbortController = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const controller = logsAbortController;
   isLoading.value = true;
   try {
-    const data = await auditService.loadAllLogs(filterReq.value, 100);
+    const data = await auditService.loadAllLogs(filterReq.value, 100, {
+      signal: controller?.signal
+    });
     auditLogs.value = data.auditLogs;
     authLogs.value = data.authLogs;
-  } catch {
+  } catch (err: unknown) {
+    if (isCanceledError(err)) return;
     toast.show("Gagal memuat data riwayat aktivitas.", "error");
   } finally {
-    isLoading.value = false;
+    if (logsAbortController === controller) {
+      isLoading.value = false;
+    }
   }
 }
 
@@ -386,6 +349,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  logsAbortController?.abort();
   debouncedLoadLogs.cancel?.();
 });
 </script>

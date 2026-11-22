@@ -9,7 +9,7 @@ import type { VerifyAuditChainResponse } from "../types/domain";
 
 export class AuditRepository extends BaseRepository {
   listAuditLogs(
-    params: AuditFilterRequestDTO | Record<string, any> = {},
+    params: AuditFilterRequestDTO | Record<string, unknown> = {},
     config: RepositoryRequestConfig = {}
   ): Promise<AuditLogListResponseDTO> {
     return this.get<AuditLogListResponseDTO>(API_ENDPOINTS.AUDIT.LOGS, {

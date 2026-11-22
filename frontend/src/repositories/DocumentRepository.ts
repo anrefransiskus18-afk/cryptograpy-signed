@@ -9,7 +9,7 @@ import type { MessageResponse } from "../types/domain";
 
 export class DocumentRepository extends BaseRepository {
   list(
-    params: DocumentFilterRequestDTO | Record<string, any> = {},
+    params: DocumentFilterRequestDTO | Record<string, unknown> = {},
     config: RepositoryRequestConfig = {}
   ): Promise<DocumentListResponseDTO> {
     return this.get<DocumentListResponseDTO>(API_ENDPOINTS.DOCUMENTS.BASE, {

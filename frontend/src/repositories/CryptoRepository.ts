@@ -16,7 +16,7 @@ export class CryptoRepository extends BaseRepository {
   }
 
   async decrypt(
-    payload: DecryptDocumentRequestDTO | Record<string, any>,
+    payload: DecryptDocumentRequestDTO | Record<string, unknown>,
     onUploadProgress?: (progressEvent: AxiosProgressEvent) => void,
     config: RepositoryRequestConfig = {}
   ): Promise<Blob> {

@@ -1,4 +1,4 @@
-import { auditRepository, type AuditRepository } from "../repositories";
+import { auditRepository, type AuditRepository, type RepositoryRequestConfig } from "../repositories";
 import { exportRowsToCsv } from "../utils/file";
 import type { AuditFilterRequestDTO, AuditLogItemDTO, AuthLogItemDTO } from "../dto";
 import type { VerifyAuditChainResponse } from "../types/domain";
@@ -11,12 +11,13 @@ export class AuditService {
   }
 
   async loadAllLogs(
-    auditFilterParams: AuditFilterRequestDTO | Record<string, any> = {},
-    authLimit = 100
+    auditFilterParams: AuditFilterRequestDTO | Record<string, unknown> = {},
+    authLimit = 100,
+    config: RepositoryRequestConfig = {}
   ): Promise<{ auditLogs: AuditLogItemDTO[]; authLogs: AuthLogItemDTO[] }> {
     const [auditResDto, authLogs] = await Promise.all([
-      this.repository.listAuditLogs(auditFilterParams),
-      this.repository.listAuthLogs(authLimit)
+      this.repository.listAuditLogs(auditFilterParams, config),
+      this.repository.listAuthLogs(authLimit, config)
     ]);
     return {
       auditLogs: auditResDto.logs,
@@ -30,8 +31,8 @@ export class AuditService {
 
   exportLogsToCsv(
     activeTab: "crypto" | "auth",
-    auditLogs: Array<Record<string, any>>,
-    authLogs: Array<Record<string, any>>
+    auditLogs: Array<Record<string, unknown>>,
+    authLogs: Array<Record<string, unknown>>
   ): string {
     const dateSuffix = new Date().toISOString().slice(0, 10);
     if (activeTab === "auth") {

@@ -1,4 +1,4 @@
-import { documentRepository, type DocumentRepository } from "../repositories";
+import { documentRepository, type DocumentRepository, type RepositoryRequestConfig } from "../repositories";
 import { triggerBlobDownload } from "../utils/file";
 import type { DocumentFilterRequestDTO, DocumentListResponseDTO, DocumentResponseDTO } from "../dto";
 import type { MessageResponse } from "../types/domain";
@@ -10,8 +10,11 @@ export class DocumentService {
     this.repository = repository;
   }
 
-  list(params: DocumentFilterRequestDTO | Record<string, any> = {}): Promise<DocumentListResponseDTO> {
-    return this.repository.list(params);
+  list(
+    params: DocumentFilterRequestDTO | Record<string, unknown> = {},
+    config: RepositoryRequestConfig = {}
+  ): Promise<DocumentListResponseDTO> {
+    return this.repository.list(params, config);
   }
 
   getById(docId: number | string): Promise<DocumentResponseDTO> {

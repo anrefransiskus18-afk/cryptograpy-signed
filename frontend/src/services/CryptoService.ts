@@ -44,14 +44,14 @@ export class CryptoService {
   }
 
   encrypt(
-    payload: EncryptDocumentRequestDTO | Record<string, any>,
+    payload: EncryptDocumentRequestDTO | Record<string, unknown>,
     onProgress?: (percent: number) => void
   ): Promise<EncryptResultResponseDTO> {
     return this.encryption.encrypt(payload, onProgress);
   }
 
   decrypt(
-    payload: DecryptDocumentRequestDTO | Record<string, any>,
+    payload: DecryptDocumentRequestDTO | Record<string, unknown>,
     onProgress?: (percent: number) => void
   ): Promise<{ blob: Blob; filename: string }> {
     return this.decryption.decrypt(payload, onProgress);

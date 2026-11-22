@@ -7,7 +7,8 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       <!-- Informasi Akun & Ubah Profil -->
-      <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+      <BaseCard>
+        <div class="space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="text-sm font-bold text-slate-900">Identitas Akun Saya</h3>
           <button
@@ -21,46 +22,16 @@
         </div>
 
         <form v-if="editingProfile" @submit.prevent="saveProfile" class="space-y-3 text-xs">
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">Nama Lengkap</label>
-            <input
-              v-model="profileForm.full_name"
-              required
-              class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3.5 text-slate-900 focus:outline-none focus:border-indigo-600"
-            />
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">Email Kantor</label>
-            <input
-              v-model="profileForm.email"
-              type="email"
-              required
-              class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3.5 text-slate-900 focus:outline-none focus:border-indigo-600"
-            />
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">Unit / Departemen</label>
-            <input
-              v-model="profileForm.department"
-              required
-              class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3.5 text-slate-900 focus:outline-none focus:border-indigo-600"
-            />
-          </div>
+          <BaseInput v-model="profileForm.full_name" label="Nama Lengkap" required />
+          <BaseInput v-model="profileForm.email" type="email" label="Email Kantor" required />
+          <BaseInput v-model="profileForm.department" label="Unit / Departemen" required />
           <div class="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              @click="editingProfile = false"
-              class="h-8 px-3.5 rounded-lg bg-slate-100 text-slate-700 font-semibold cursor-pointer"
-            >
+            <BaseButton variant="secondary" size="sm" @click="editingProfile = false">
               Batal
-            </button>
-            <button
-              type="submit"
-              :disabled="savingProfile"
-              class="h-8 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold cursor-pointer"
-            >
+            </BaseButton>
+            <BaseButton type="submit" size="sm" :loading="savingProfile">
               {{ savingProfile ? "Menyimpan..." : "Simpan Profil" }}
-            </button>
+            </BaseButton>
           </div>
         </form>
 
@@ -94,7 +65,8 @@
             fallback="Belum Ada"
           />
         </div>
-      </div>
+        </div>
+      </BaseCard>
 
       <!-- Ubah Password -->
       <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
@@ -159,6 +131,9 @@ import PageHeader from "../components/PageHeader.vue";
 import MonoCopyBox from "../components/MonoCopyBox.vue";
 import PasswordInput from "../components/PasswordInput.vue";
 import AlertBanner from "../components/AlertBanner.vue";
+import BaseCard from "../components/BaseCard.vue";
+import BaseInput from "../components/BaseInput.vue";
+import BaseButton from "../components/BaseButton.vue";
 
 const emit = defineEmits<{
   (e: "auth-updated"): void;

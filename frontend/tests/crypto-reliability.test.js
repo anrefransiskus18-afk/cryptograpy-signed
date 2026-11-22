@@ -69,6 +69,35 @@ test("Cryptography Matrix: ECDH NIST P-256 + HKDF-SHA256 + SHA-256 + Key Import/
   assert.equal(abcHash, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
 });
 
+test("Cryptography KAT: NIST SP 800-38D AES-256-GCM & RFC 5869 HKDF-SHA256 known-answer vectors", async () => {
+  // 1. NIST SP 800-38D Test Case 13: 256-bit zero key, 96-bit zero IV, empty plaintext & AAD -> exact 128-bit auth tag
+  const zeroKeyBytes = new Uint8Array(32);
+  const zeroIv = new Uint8Array(12);
+  const aesKey = await subtle.importKey("raw", zeroKeyBytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+  const tagOnly = Buffer.from(
+    await subtle.encrypt({ name: "AES-GCM", iv: zeroIv }, aesKey, new Uint8Array(0))
+  ).toString("hex");
+  assert.equal(tagOnly, "530f8afbc74536b9a963b4f1c4cb738b");
+
+  // Adversarial: truncated ciphertext (< 16-byte tag) must fail
+  await assert.rejects(() =>
+    subtle.decrypt({ name: "AES-GCM", iv: zeroIv }, aesKey, new Uint8Array(15))
+  );
+
+  // 2. RFC 5869 Appendix A.1 Test Case 1 (HKDF-SHA256)
+  const ikm = new Uint8Array(22).fill(0x0b);
+  const salt = Uint8Array.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c]);
+  const info = Uint8Array.from([0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9]);
+  const hkdfKey = await subtle.importKey("raw", ikm, "HKDF", false, ["deriveBits"]);
+  const okm = Buffer.from(
+    await subtle.deriveBits({ name: "HKDF", hash: "SHA-256", salt, info }, hkdfKey, 42 * 8)
+  ).toString("hex");
+  assert.equal(
+    okm,
+    "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
+  );
+});
+
 test("AadMetadataDTO produces deterministic JSON string", () => {
   const aad = new AadMetadataDTO({
     classification: "SECRET",

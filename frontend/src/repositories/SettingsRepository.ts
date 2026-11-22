@@ -14,7 +14,7 @@ export class SettingsRepository extends BaseRepository {
     });
   }
 
-  updateSettings(payload: UpdateSettingsRequestDTO | Record<string, any>): Promise<SystemSettingsDTO> {
+  updateSettings(payload: UpdateSettingsRequestDTO | Record<string, unknown>): Promise<SystemSettingsDTO> {
     return this.put<SystemSettingsDTO>(API_ENDPOINTS.SETTINGS.BASE, payload, {
       requestStruct: UpdateSettingsRequestDTO,
       responseStruct: SystemSettingsDTO

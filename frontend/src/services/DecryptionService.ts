@@ -45,7 +45,7 @@ export class DecryptionService {
   }
 
   async decrypt(
-    payload: DecryptDocumentRequestDTO | Record<string, any>,
+    payload: DecryptDocumentRequestDTO | Record<string, unknown>,
     onProgress?: (percent: number) => void
   ): Promise<{ blob: Blob; filename: string }> {
     if (!payload?.enc_file && !payload?.document_id) {
@@ -70,7 +70,9 @@ export class DecryptionService {
       }
     });
 
-    const downloadName = payload.original_filename || "Dokumen_Terpulihkan";
+    const rawFilename = payload.original_filename;
+    const downloadName =
+      typeof rawFilename === "string" && rawFilename ? rawFilename : "Dokumen_Terpulihkan";
     triggerBlobDownload(blob, downloadName);
     return { blob, filename: downloadName };
   }

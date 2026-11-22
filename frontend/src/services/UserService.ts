@@ -1,4 +1,4 @@
-import { userRepository, type UserRepository } from "../repositories";
+import { userRepository, type UserRepository, type RepositoryRequestConfig } from "../repositories";
 import {
   UpdateUserRequestDTO,
   type CreateUserRequestDTO,
@@ -15,17 +15,20 @@ export class UserService {
     this.repository = repository;
   }
 
-  list(params: UserFilterRequestDTO | Record<string, any> = {}): Promise<UserResponseDTO[]> {
-    return this.repository.list(params);
+  list(
+    params: UserFilterRequestDTO | Record<string, unknown> = {},
+    config: RepositoryRequestConfig = {}
+  ): Promise<UserResponseDTO[]> {
+    return this.repository.list(params, config);
   }
 
-  create(payload: CreateUserRequestDTO | Record<string, any>): Promise<UserMutationResponseDTO> {
+  create(payload: CreateUserRequestDTO | Record<string, unknown>): Promise<UserMutationResponseDTO> {
     return this.repository.create(payload);
   }
 
   update(
     userId: number | string,
-    payload: UpdateUserRequestDTO | Record<string, any>
+    payload: UpdateUserRequestDTO | Record<string, unknown>
   ): Promise<UserMutationResponseDTO> {
     return this.repository.update(userId, payload);
   }
