@@ -218,7 +218,7 @@
       <template #footer>
         <button
           type="button"
-          @click="downloadEncrypted(selectedDocDetail)"
+          @click="selectedDocDetail && downloadEncrypted(selectedDocDetail)"
           class="h-8 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
         >
           Unduh (.enc)
@@ -250,10 +250,10 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { documentService } from "../services";
-import { DocumentFilterRequestDTO, extractApiError } from "../dto";
+import { DocumentFilterRequestDTO, DocumentResponseDTO, extractApiError } from "../dto";
 import { usePermissions } from "../composables/usePermissions";
 import { useFormatters } from "../composables/useFormatters";
 import { useI18n } from "../i18n";
@@ -277,12 +277,12 @@ const {
 } = useFormatters();
 const toast = useToastStore();
 
-const documents = ref([]);
+const documents = ref<DocumentResponseDTO[]>([]);
 const totalItems = ref(0);
 const isLoading = ref(false);
 const filterReq = ref(new DocumentFilterRequestDTO({ page: 1, per_page: 10 }));
-const selectedDocDetail = ref(null);
-const docToDelete = ref(null);
+const selectedDocDetail = ref<DocumentResponseDTO | null>(null);
+const docToDelete = ref<DocumentResponseDTO | null>(null);
 
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / filterReq.value.per_page)));
 
@@ -316,13 +316,13 @@ const debouncedSearch = debounce(() => {
   handleFilterChange();
 }, 300);
 
-function changePage(nextPage) {
+function changePage(nextPage: number) {
   if (nextPage < 1 || nextPage > totalPages.value) return;
   filterReq.value.page = nextPage;
   loadDocuments();
 }
 
-async function inspectDocument(docId) {
+async function inspectDocument(docId: number) {
   try {
     selectedDocDetail.value = await documentService.getById(docId);
   } catch {
@@ -330,7 +330,7 @@ async function inspectDocument(docId) {
   }
 }
 
-async function downloadEncrypted(doc) {
+async function downloadEncrypted(doc: DocumentResponseDTO) {
   try {
     const filename = await documentService.downloadEncrypted(doc);
     toast.show(`File ${filename} berhasil diunduh.`, "success");

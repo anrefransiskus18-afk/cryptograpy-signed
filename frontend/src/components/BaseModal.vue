@@ -35,7 +35,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { watch, onBeforeUnmount } from "vue";
 
 const props = defineProps({
@@ -47,7 +47,7 @@ const props = defineProps({
 
 const emit = defineEmits(["close"]);
 
-function handleKeydown(e) {
+function handleKeydown(e: KeyboardEvent) {
   if (e.key === "Escape" && props.open) {
     emit("close");
   }

@@ -190,13 +190,14 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { keyService } from "../services";
 import {
   KeyPassphraseRequestDTO,
   VerifyKeyRequestDTO,
   MyKeyStatusResponseDTO,
+  PublicKeyDirectoryItemDTO,
   extractApiError
 } from "../dto";
 import { useFormatters } from "../composables/useFormatters";
@@ -220,7 +221,7 @@ const toast = useToastStore();
 const keyReq = ref(new KeyPassphraseRequestDTO({ passphrase: DEMO_KEY_PASSPHRASE }));
 const myKey = ref(new MyKeyStatusResponseDTO());
 const localPrivateKeyPem = ref("");
-const directoryKeys = ref([]);
+const directoryKeys = ref<PublicKeyDirectoryItemDTO[]>([]);
 const recipientSearch = ref("");
 const isLoading = ref(false);
 const loading = ref(false);
@@ -258,7 +259,7 @@ function handleKeyAction() {
   errorMsg.value = "";
   try {
     keyService.validatePassphrase(keyReq.value.passphrase);
-  } catch (err) {
+  } catch (err: any) {
     errorMsg.value = err.message;
     return;
   }

@@ -198,10 +198,10 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { dashboardService } from "../services";
-import { DashboardResponseDTO, extractApiError } from "../dto";
+import { DashboardResponseDTO, DocumentResponseDTO, extractApiError } from "../dto";
 import { useAuthStore } from "../stores/auth";
 import { useFormatters } from "../composables/useFormatters";
 import { useAsync } from "../composables/useAsync";
@@ -227,7 +227,7 @@ const {
   classificationBadge
 } = useFormatters();
 
-const recentDocs = ref([]);
+const recentDocs = ref<DocumentResponseDTO[]>([]);
 const stats = ref(new DashboardResponseDTO());
 const { loading: isLoading, execute: runDashboardLoad } = useAsync(() =>
   dashboardService.loadDashboardData()

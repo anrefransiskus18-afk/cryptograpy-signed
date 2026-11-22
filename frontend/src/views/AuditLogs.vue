@@ -273,10 +273,10 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { auditService } from "../services";
-import { AuditFilterRequestDTO } from "../dto";
+import { AuditFilterRequestDTO, AuditLogItemDTO, AuthLogItemDTO } from "../dto";
 import { usePermissions } from "../composables/usePermissions";
 import { useFormatters } from "../composables/useFormatters";
 import { useI18n } from "../i18n";
@@ -292,11 +292,11 @@ const { formatTime, formatAction, formatStatus, badgeClass, debounce } = useForm
 const { t } = useI18n();
 const toast = useToastStore();
 
-const activeTab = ref("crypto");
+const activeTab = ref<"crypto" | "auth">("crypto");
 const isLoading = ref(false);
-const auditLogs = ref([]);
-const authLogs = ref([]);
-const selectedLog = ref(null);
+const auditLogs = ref<AuditLogItemDTO[]>([]);
+const authLogs = ref<AuthLogItemDTO[]>([]);
+const selectedLog = ref<AuditLogItemDTO | null>(null);
 const authStatusFilter = ref("");
 const verifyingChain = ref(false);
 const filterReq = ref(new AuditFilterRequestDTO({ limit: 150 }));

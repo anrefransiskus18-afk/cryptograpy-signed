@@ -142,11 +142,16 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { authService } from "../services";
-import { ChangePasswordRequestDTO, UpdateProfileRequestDTO, extractApiError } from "../dto";
+import {
+  ChangePasswordRequestDTO,
+  UpdateProfileRequestDTO,
+  UserProfileDTO,
+  extractApiError
+} from "../dto";
 import { useFormatters } from "../composables/useFormatters";
 import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
@@ -161,7 +166,7 @@ const { formatRole } = useFormatters();
 const { t } = useI18n();
 const toast = useToastStore();
 
-const profile = ref(null);
+const profile = ref<UserProfileDTO | null>(null);
 const editingProfile = ref(false);
 const savingProfile = ref(false);
 const profileForm = ref(new UpdateProfileRequestDTO());

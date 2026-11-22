@@ -26,19 +26,19 @@
   </div>
 </template>
 
-<script setup>
-import { useToastStore } from "../stores/toast";
+<script setup lang="ts">
+import { useToastStore, type ToastType } from "../stores/toast";
 
 const toastStore = useToastStore();
 
-function toastStyle(type) {
+function toastStyle(type: ToastType) {
   if (type === "error") return "border-rose-300 shadow-rose-900/5";
   if (type === "success") return "border-emerald-300 shadow-emerald-900/5";
   if (type === "warning") return "border-amber-300 shadow-amber-900/5";
   return "border-indigo-200 shadow-slate-900/5";
 }
 
-function dotStyle(type) {
+function dotStyle(type: ToastType) {
   if (type === "error") return "bg-rose-500";
   if (type === "success") return "bg-emerald-500";
   if (type === "warning") return "bg-amber-500";

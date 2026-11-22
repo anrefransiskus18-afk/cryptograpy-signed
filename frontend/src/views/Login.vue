@@ -101,7 +101,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { authService } from "../services";
@@ -139,7 +139,7 @@ const demoAccounts = [
   { username: "penerima.sah", label: "Penerima Berwenang" }
 ];
 
-function fillAccount(user) {
+function fillAccount(user: string) {
   loginForm.value = new LoginRequestDTO({
     username: user,
     password: DEMO_PASSWORD

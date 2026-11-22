@@ -34,7 +34,7 @@
   </BaseModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import BaseModal from "./BaseModal.vue";
 
 defineProps({

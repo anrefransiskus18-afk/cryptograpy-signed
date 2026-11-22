@@ -164,11 +164,16 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { cryptoService, encryptionService } from "../services";
-import { EncryptDocumentRequestDTO, extractApiError } from "../dto";
+import {
+  EncryptDocumentRequestDTO,
+  EncryptResultResponseDTO,
+  PublicKeyDirectoryItemDTO,
+  extractApiError
+} from "../dto";
 import { useAuthStore } from "../stores/auth";
 import { useFormatters } from "../composables/useFormatters";
 import { useI18n } from "../i18n";
@@ -193,11 +198,11 @@ const encryptReq = ref(
     }
   })
 );
-const recipientKeys = ref([]);
+const recipientKeys = ref<PublicKeyDirectoryItemDTO[]>([]);
 const isEncrypting = ref(false);
 const uploadProgress = ref(0);
 const errorMessage = ref("");
-const lastEncryptionResult = ref(null);
+const lastEncryptionResult = ref<EncryptResultResponseDTO | null>(null);
 
 const selectedRecipient = computed(() =>
   recipientKeys.value.find((k) => k.key_id === encryptReq.value.recipient_key_id) || null
@@ -211,11 +216,11 @@ const clearanceWarning = computed(() =>
   )
 );
 
-function validateAndSetFile(file) {
+function validateAndSetFile(file: File) {
   try {
     encryptReq.value.document = encryptionService.validateFile(file);
     errorMessage.value = "";
-  } catch (err) {
+  } catch (err: any) {
     errorMessage.value = err.message;
   }
 }

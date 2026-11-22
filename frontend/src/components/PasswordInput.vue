@@ -14,7 +14,7 @@
       <input
         :id="inputId"
         :value="modelValue"
-        @input="$emit('update:modelValue', $event.target.value)"
+        @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
         :type="show ? 'text' : 'password'"
         :required="required"
         :minlength="minlength"
@@ -34,7 +34,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, useId } from "vue";
 
 defineProps({

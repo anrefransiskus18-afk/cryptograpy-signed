@@ -9,7 +9,7 @@
   </button>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 import { useFormatters } from "../composables/useFormatters";
 import { useToastStore } from "../stores/toast";

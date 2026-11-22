@@ -13,7 +13,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 defineProps({
   label: { type: String, default: "Memproses..." },
   progress: { type: Number, default: 0 }

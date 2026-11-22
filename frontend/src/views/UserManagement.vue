@@ -349,13 +349,14 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { userService } from "../services";
 import {
   UserFilterRequestDTO,
   CreateUserRequestDTO,
   UpdateUserRequestDTO,
+  UserResponseDTO,
   extractApiError
 } from "../dto";
 import { useAuthStore } from "../stores/auth";
@@ -385,18 +386,18 @@ const ROLE_OPTIONS = [
   { value: "ADMINISTRATOR", label: "Administrator TI (Level 4)" }
 ];
 
-const users = ref([]);
+const users = ref<UserResponseDTO[]>([]);
 const isLoading = ref(false);
 const filterReq = ref(new UserFilterRequestDTO());
 const showCreateModal = ref(false);
 const newUserReq = ref(new CreateUserRequestDTO());
-const editingUser = ref(null);
+const editingUser = ref<UserResponseDTO | null>(null);
 const editUserReq = ref(new UpdateUserRequestDTO());
-const userToRotateKey = ref(null);
-const keyModalMode = ref("rotate");
+const userToRotateKey = ref<UserResponseDTO | null>(null);
+const keyModalMode = ref<"rotate" | "restore">("rotate");
 const rotateKeyPassphrase = ref(DEMO_KEY_PASSPHRASE);
-const userToDelete = ref(null);
-const userToDeactivate = ref(null);
+const userToDelete = ref<UserResponseDTO | null>(null);
+const userToDeactivate = ref<UserResponseDTO | null>(null);
 const isSubmitting = ref(false);
 
 async function loadUsers() {
@@ -414,7 +415,7 @@ const debouncedLoadUsers = debounce(() => {
   loadUsers();
 }, 300);
 
-function openEditModal(user) {
+function openEditModal(user: UserResponseDTO) {
   editingUser.value = user;
   editUserReq.value = new UpdateUserRequestDTO({
     full_name: user.full_name,
@@ -465,7 +466,7 @@ async function submitCreateUser() {
   }
 }
 
-function requestToggleActive(user) {
+function requestToggleActive(user: UserResponseDTO) {
   // Menonaktifkan akun aktif butuh konfirmasi; memulihkan akun terhapus butuh passphrase kunci baru
   if (user.is_active && !user.deleted_at) {
     userToDeactivate.value = user;
@@ -483,7 +484,7 @@ async function confirmDeactivate() {
   if (target) await toggleActive(target);
 }
 
-async function toggleActive(user) {
+async function toggleActive(user: UserResponseDTO) {
   try {
     await userService.toggleActive(user);
     toast.show(`Status akun ${user.username} diperbarui.`, "success");

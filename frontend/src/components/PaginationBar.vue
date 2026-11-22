@@ -28,7 +28,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 defineProps({
   page: { type: Number, required: true },
   totalPages: { type: Number, required: true },

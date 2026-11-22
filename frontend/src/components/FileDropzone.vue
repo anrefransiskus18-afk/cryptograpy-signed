@@ -23,13 +23,13 @@
   </label>
 </template>
 
-<script setup>
-import { ref } from "vue";
+<script setup lang="ts">
+import { ref, type PropType } from "vue";
 import { useFormatters } from "../composables/useFormatters";
 
 defineProps({
   inputId: { type: String, default: "file-upload" },
-  file: { type: Object, default: null },
+  file: { type: Object as PropType<File | null>, default: null },
   accept: { type: String, default: "" },
   emptyTitle: { type: String, default: "Klik untuk memilih file atau seret ke sini" },
   hint: { type: String, default: "" }
@@ -39,13 +39,14 @@ const emit = defineEmits(["select"]);
 const { formatBytes } = useFormatters();
 const isDragging = ref(false);
 
-function handleChange(event) {
-  const f = event.target.files?.[0];
+function handleChange(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const f = input.files?.[0];
   if (f) emit("select", f);
-  event.target.value = "";
+  input.value = "";
 }
 
-function handleDrop(event) {
+function handleDrop(event: DragEvent) {
   isDragging.value = false;
   const f = event.dataTransfer?.files?.[0];
   if (f) emit("select", f);

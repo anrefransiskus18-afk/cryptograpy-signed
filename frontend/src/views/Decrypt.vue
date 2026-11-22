@@ -158,11 +158,16 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { cryptoService, decryptionService, documentService } from "../services";
-import { DecryptDocumentRequestDTO, DocumentFilterRequestDTO, extractApiError } from "../dto";
+import {
+  DecryptDocumentRequestDTO,
+  DocumentFilterRequestDTO,
+  DocumentResponseDTO,
+  extractApiError
+} from "../dto";
 import { ErrorType } from "../utils/errors";
 import { useAuthStore } from "../stores/auth";
 import { useFormatters } from "../composables/useFormatters";
@@ -181,7 +186,7 @@ const { t } = useI18n();
 const { formatBytes, formatClassification } = useFormatters();
 const toast = useToastStore();
 
-const storedDocuments = ref([]);
+const storedDocuments = ref<DocumentResponseDTO[]>([]);
 const decryptReq = ref(
   new DecryptDocumentRequestDTO({
     passphrase: DEMO_KEY_PASSPHRASE,
@@ -196,7 +201,7 @@ const generalError = ref("");
 const recipientMismatchNote = ref("");
 const decryptionSuccess = ref(false);
 
-function isRecipientCurrentUser(doc) {
+function isRecipientCurrentUser(doc: DocumentResponseDTO) {
   return decryptionService.isRecipientUser(doc, authStore.user?.id);
 }
 
@@ -204,10 +209,10 @@ const sortedStoredDocuments = computed(() =>
   decryptionService.sortDocumentsForUser(storedDocuments.value, authStore.user?.id)
 );
 
-function assignEncFile(file) {
+function assignEncFile(file: File) {
   try {
     decryptionService.validateEncFile(file);
-  } catch (err) {
+  } catch (err: any) {
     generalError.value = err.message;
     return;
   }
@@ -224,9 +229,10 @@ function assignEncFile(file) {
   }
 }
 
-function handlePemFileUpload(event) {
-  const file = event.target.files?.[0];
-  event.target.value = "";
+function handlePemFileUpload(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = "";
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
@@ -285,7 +291,7 @@ async function executeDecryption() {
     });
     decryptionSuccess.value = true;
     toast.show(`Dokumen ${filename} berhasil dibuka.`, "success");
-  } catch (err) {
+  } catch (err: any) {
     if (err?.type === ErrorType.CRYPTO || err?.status === 422 || err?.errorCode === "TAMPER_DETECTED") {
       tamperAlert.value = err.message || "Isi dokumen tidak asli atau telah dimodifikasi.";
       toast.show("Peringatan: File terdeteksi telah diubah atau rusak!", "error");
