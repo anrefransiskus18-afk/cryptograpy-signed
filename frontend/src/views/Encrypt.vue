@@ -232,7 +232,7 @@ async function fetchInitialConfig() {
     const queryKeyId = Number(route.query.recipient_key_id);
     if (queryKeyId && recipientKeys.value.some((k) => k.key_id === queryKeyId)) {
       encryptReq.value.recipient_key_id = queryKeyId;
-    } else if (recipientKeys.value.length > 0 && !encryptReq.value.recipient_key_id) {
+    } else if (recipientKeys.value[0] && !encryptReq.value.recipient_key_id) {
       encryptReq.value.recipient_key_id = recipientKeys.value[0].key_id;
     }
     if (settings?.default_key_wrap_mode) {

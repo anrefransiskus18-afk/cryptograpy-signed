@@ -9,6 +9,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
     "verbatimModuleSyntax": true,
     "jsx": "preserve",
     "resolveJsonModule": true,

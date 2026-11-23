@@ -11,7 +11,9 @@ export async function flipLastBitInContainer(file: File): Promise<File> {
   const prefix = file.slice(0, file.size - 1);
   const lastByteBuf = await file.slice(file.size - 1).arrayBuffer();
   const lastByte = new Uint8Array(lastByteBuf);
-  lastByte[0] ^= 0x01;
+  if (lastByte.length > 0) {
+    lastByte[0] = (lastByte[0] ?? 0) ^ 0x01;
+  }
   return new File([prefix, lastByte], `RUSAK_${file.name}`, {
     type: "application/octet-stream"
   });

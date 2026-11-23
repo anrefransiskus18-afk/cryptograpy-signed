@@ -24,7 +24,7 @@ function createCorrelationId(): string {
 function readCookie(name: string): string {
   if (typeof document === "undefined" || !document.cookie) return "";
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : "";
+  return match && match[1] ? decodeURIComponent(match[1]) : "";
 }
 
 export function attachInterceptors(client: AxiosInstance): void {

@@ -103,10 +103,10 @@
                 </div>
                 <div class="text-[11px] mt-0.5">
                   <span
-                    v-if="doc.recipients[0]?.decrypted_count > 0"
+                    v-if="(doc.recipients[0]?.decrypted_count ?? 0) > 0"
                     class="text-emerald-700 font-medium"
                   >
-                    Sudah dibuka ({{ doc.recipients[0].decrypted_count }}x)
+                    Sudah dibuka ({{ doc.recipients[0]?.decrypted_count }}x)
                   </span>
                   <span v-else class="text-slate-400">Belum dibuka penerima</span>
                 </div>
