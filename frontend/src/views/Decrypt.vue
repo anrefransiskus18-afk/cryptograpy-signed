@@ -33,11 +33,12 @@
     <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5">
       <!-- 1. Pilih Sumber Dokumen -->
       <div class="space-y-3">
-        <label class="block text-xs font-semibold text-slate-700">
+        <label :for="storedDocSelectId" class="block text-xs font-semibold text-slate-700">
           1. Pilih Dokumen yang Ingin Dibuka
         </label>
 
         <select
+          :id="storedDocSelectId"
           v-model="decryptReq.document_id"
           @change="handleSelectStoredDocument"
           class="h-9 w-full bg-slate-50 border border-slate-300 rounded-lg px-3 text-xs text-slate-900 focus:outline-none focus:border-indigo-600"
@@ -84,15 +85,11 @@
 
       <!-- 2. Nama File & Passphrase -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5">2. Simpan Sebagai Nama File</label>
-          <input
-            v-model="decryptReq.original_filename"
-            type="text"
-            placeholder="Contoh: Laporan_Keuangan.pdf"
-            class="h-9 w-full bg-slate-50 border border-slate-300 rounded-lg px-3 text-xs text-slate-900 focus:outline-none focus:border-indigo-600"
-          />
-        </div>
+        <BaseInput
+          v-model="decryptReq.original_filename"
+          label="2. Simpan Sebagai Nama File"
+          placeholder="Contoh: Laporan_Keuangan.pdf"
+        />
 
         <PasswordInput
           v-model="decryptReq.passphrase"
@@ -110,7 +107,7 @@
 
         <div v-if="!decryptReq.use_stored_key" class="space-y-1.5">
           <div class="flex items-center justify-between">
-            <label class="block text-xs font-semibold text-slate-700">Tempel atau Unggah Cadangan Kunci Pribadi (.pem)</label>
+            <label :for="pemTextareaId" class="block text-xs font-semibold text-slate-700">Tempel atau Unggah Cadangan Kunci Pribadi (.pem)</label>
             <label
               for="pem-file-upload"
               class="text-xs font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer"
@@ -126,6 +123,7 @@
             </label>
           </div>
           <textarea
+            :id="pemTextareaId"
             v-model="decryptReq.private_key_pkcs8"
             rows="3"
             placeholder="-----BEGIN ENCRYPTED PRIVATE KEY----- ..."
@@ -158,12 +156,17 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from "vue";
+<script setup lang="ts">
+import { ref, shallowRef, computed, onMounted, useId } from "vue";
 import { useRoute } from "vue-router";
 import { cryptoService, decryptionService, documentService } from "../services";
-import { DecryptDocumentRequestDTO, DocumentFilterRequestDTO, extractApiError } from "../dto";
-import { ErrorType } from "../utils/errors";
+import {
+  DecryptDocumentRequestDTO,
+  DocumentFilterRequestDTO,
+  DocumentResponseDTO,
+  extractApiError
+} from "../dto";
+import { AppError, ErrorType } from "../utils/errors";
 import { useAuthStore } from "../stores/auth";
 import { useFormatters } from "../composables/useFormatters";
 import { useI18n } from "../i18n";
@@ -174,6 +177,10 @@ import AlertBanner from "../components/AlertBanner.vue";
 import FileDropzone from "../components/FileDropzone.vue";
 import PasswordInput from "../components/PasswordInput.vue";
 import ProgressBar from "../components/ProgressBar.vue";
+import BaseInput from "../components/BaseInput.vue";
+
+const storedDocSelectId = useId();
+const pemTextareaId = useId();
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -181,7 +188,7 @@ const { t } = useI18n();
 const { formatBytes, formatClassification } = useFormatters();
 const toast = useToastStore();
 
-const storedDocuments = ref([]);
+const storedDocuments = shallowRef<DocumentResponseDTO[]>([]);
 const decryptReq = ref(
   new DecryptDocumentRequestDTO({
     passphrase: DEMO_KEY_PASSPHRASE,
@@ -196,7 +203,7 @@ const generalError = ref("");
 const recipientMismatchNote = ref("");
 const decryptionSuccess = ref(false);
 
-function isRecipientCurrentUser(doc) {
+function isRecipientCurrentUser(doc: DocumentResponseDTO) {
   return decryptionService.isRecipientUser(doc, authStore.user?.id);
 }
 
@@ -204,11 +211,11 @@ const sortedStoredDocuments = computed(() =>
   decryptionService.sortDocumentsForUser(storedDocuments.value, authStore.user?.id)
 );
 
-function assignEncFile(file) {
+function assignEncFile(file: File) {
   try {
     decryptionService.validateEncFile(file);
-  } catch (err) {
-    generalError.value = err.message;
+  } catch (err: unknown) {
+    generalError.value = extractApiError(err, "File terenkripsi tidak valid.");
     return;
   }
   decryptReq.value.document_id = null;
@@ -224,10 +231,15 @@ function assignEncFile(file) {
   }
 }
 
-function handlePemFileUpload(event) {
-  const file = event.target.files?.[0];
-  event.target.value = "";
+function handlePemFileUpload(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = "";
   if (!file) return;
+  if (file.size > 64 * 1024) {
+    toast.show("Ukuran file kunci (.pem) melebihi batas aman 64 KB.", "error");
+    return;
+  }
   const reader = new FileReader();
   reader.onload = () => {
     decryptReq.value.private_key_pkcs8 = String(reader.result || "").trim();
@@ -285,8 +297,11 @@ async function executeDecryption() {
     });
     decryptionSuccess.value = true;
     toast.show(`Dokumen ${filename} berhasil dibuka.`, "success");
-  } catch (err) {
-    if (err?.type === ErrorType.CRYPTO || err?.status === 422 || err?.errorCode === "TAMPER_DETECTED") {
+  } catch (err: unknown) {
+    if (
+      err instanceof AppError &&
+      (err.type === ErrorType.CRYPTO || err.status === 422 || err.errorCode === "TAMPER_DETECTED")
+    ) {
       tamperAlert.value = err.message || "Isi dokumen tidak asli atau telah dimodifikasi.";
       toast.show("Peringatan: File terdeteksi telah diubah atau rusak!", "error");
       return;

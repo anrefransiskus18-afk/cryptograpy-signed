@@ -1,16 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { BaseRepository } from "../src/repositories/BaseRepository.js";
-import { AuthRepository } from "../src/repositories/AuthRepository.js";
-import { CryptoRepository } from "../src/repositories/CryptoRepository.js";
-import { DocumentRepository } from "../src/repositories/DocumentRepository.js";
-import { KeyRepository } from "../src/repositories/KeyRepository.js";
-import { UserRepository } from "../src/repositories/UserRepository.js";
-import { AuditRepository } from "../src/repositories/AuditRepository.js";
-import { DashboardRepository } from "../src/repositories/DashboardRepository.js";
-import { SettingsRepository } from "../src/repositories/SettingsRepository.js";
-import { API_ENDPOINTS } from "../src/constants/endpoints.js";
-import { AppError, ErrorType } from "../src/utils/errors.js";
+import { BaseRepository } from "../src/repositories/BaseRepository.ts";
+import { AuthRepository } from "../src/repositories/AuthRepository.ts";
+import { CryptoRepository } from "../src/repositories/CryptoRepository.ts";
+import { DocumentRepository } from "../src/repositories/DocumentRepository.ts";
+import { KeyRepository } from "../src/repositories/KeyRepository.ts";
+import { UserRepository } from "../src/repositories/UserRepository.ts";
+import { AuditRepository } from "../src/repositories/AuditRepository.ts";
+import { DashboardRepository } from "../src/repositories/DashboardRepository.ts";
+import { SettingsRepository } from "../src/repositories/SettingsRepository.ts";
+import { API_ENDPOINTS } from "../src/constants/endpoints.ts";
+import { AppError, ErrorType } from "../src/utils/errors.ts";
 
 function createSpyClient(response = { data: {} }) {
   const calls = [];

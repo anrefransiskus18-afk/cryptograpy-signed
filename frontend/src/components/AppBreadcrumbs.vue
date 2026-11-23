@@ -10,7 +10,7 @@
   </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "../i18n";
@@ -19,9 +19,9 @@ const route = useRoute();
 const { t } = useI18n();
 
 const currentLabel = computed(() => {
-  if (route.meta?.titleKey) {
+  if (typeof route.meta?.titleKey === "string") {
     return t(route.meta.titleKey);
   }
-  return route.meta?.title || "";
+  return typeof route.meta?.title === "string" ? route.meta.title : "";
 });
 </script>

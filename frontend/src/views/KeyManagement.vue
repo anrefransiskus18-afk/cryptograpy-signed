@@ -190,13 +190,14 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { keyService } from "../services";
 import {
   KeyPassphraseRequestDTO,
   VerifyKeyRequestDTO,
   MyKeyStatusResponseDTO,
+  PublicKeyDirectoryItemDTO,
   extractApiError
 } from "../dto";
 import { useFormatters } from "../composables/useFormatters";
@@ -212,7 +213,9 @@ import AlertBanner from "../components/AlertBanner.vue";
 import DataTableCard from "../components/DataTableCard.vue";
 import { DEMO_KEY_PASSPHRASE } from "../config/demo";
 
-const emit = defineEmits(["auth-updated"]);
+const emit = defineEmits<{
+  (e: "auth-updated"): void;
+}>();
 const { formatRole, formatTime } = useFormatters();
 const { t } = useI18n();
 const toast = useToastStore();
@@ -220,7 +223,7 @@ const toast = useToastStore();
 const keyReq = ref(new KeyPassphraseRequestDTO({ passphrase: DEMO_KEY_PASSPHRASE }));
 const myKey = ref(new MyKeyStatusResponseDTO());
 const localPrivateKeyPem = ref("");
-const directoryKeys = ref([]);
+const directoryKeys = ref<PublicKeyDirectoryItemDTO[]>([]);
 const recipientSearch = ref("");
 const isLoading = ref(false);
 const loading = ref(false);
@@ -258,8 +261,8 @@ function handleKeyAction() {
   errorMsg.value = "";
   try {
     keyService.validatePassphrase(keyReq.value.passphrase);
-  } catch (err) {
-    errorMsg.value = err.message;
+  } catch (err: unknown) {
+    errorMsg.value = extractApiError(err, "Kata sandi kunci keamanan tidak valid.");
     return;
   }
   if (myKey.value.has_active_key) {

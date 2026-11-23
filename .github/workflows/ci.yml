@@ -43,6 +43,9 @@ jobs:
       - name: Architecture, Cycle & Security Check
         working-directory: frontend
         run: npm run lint:arch
+      - name: TypeScript Type Check
+        working-directory: frontend
+        run: npm run typecheck
       - name: Unit, Cryptography & Coverage Tests
         working-directory: frontend
         run: npm run test:coverage

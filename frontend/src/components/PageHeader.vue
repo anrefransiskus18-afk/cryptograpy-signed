@@ -10,9 +10,13 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  title: { type: String, required: true },
-  subtitle: { type: String, default: "" }
+<script setup lang="ts">
+export interface PageHeaderProps {
+  title: string;
+  subtitle?: string;
+}
+
+withDefaults(defineProps<PageHeaderProps>(), {
+  subtitle: ""
 });
 </script>

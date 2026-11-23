@@ -24,50 +24,43 @@
     </PageHeader>
 
     <!-- Filter & Pencarian -->
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
-      <div class="w-full md:w-80">
-        <input
-          v-model="filterReq.search"
-          @input="debouncedSearch"
-          type="text"
-          placeholder="Cari nama file atau kode dokumen..."
-          class="h-9 w-full bg-slate-50 focus:bg-white border border-slate-200 rounded-lg px-3.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500"
-        />
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-        <select
+    <FilterToolbar
+      v-model:search="filterReq.search"
+      searchPlaceholder="Cari nama file atau kode dokumen..."
+      @update:search="debouncedSearch"
+    >
+      <template #filters>
+        <BaseSelect
           v-model="filterReq.classification"
-          @change="handleFilterChange"
-          class="h-9 bg-slate-50 border border-slate-200 rounded-lg px-3 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
+          @update:modelValue="handleFilterChange"
+          selectClass="font-medium text-slate-700"
         >
           <option value="">Semua Tingkat Kerahasiaan</option>
           <option value="INTERNAL">Internal</option>
           <option value="CONFIDENTIAL">Terbatas (Confidential)</option>
           <option value="SECRET">Rahasia (Secret)</option>
           <option value="TOP_SECRET">Sangat Rahasia (Top Secret)</option>
-        </select>
+        </BaseSelect>
 
-        <select
+        <BaseSelect
           v-model="filterReq.scope"
-          @change="handleFilterChange"
-          class="h-9 bg-slate-50 border border-slate-200 rounded-lg px-3 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
+          @update:modelValue="handleFilterChange"
+          selectClass="font-medium text-slate-700"
         >
           <option value="all">Semua Dokumen Saya</option>
           <option value="sent">Dokumen yang Saya Kirim</option>
           <option value="received">Dokumen Masuk untuk Saya</option>
-        </select>
+        </BaseSelect>
 
-        <button
+        <BaseButton
           v-if="filterReq.search || filterReq.classification || filterReq.scope !== 'all'"
-          type="button"
+          variant="secondary"
           @click="resetFilters"
-          class="h-9 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
         >
           Reset Filter
-        </button>
-      </div>
-    </div>
+        </BaseButton>
+      </template>
+    </FilterToolbar>
 
     <!-- Tabel Dokumen -->
     <DataTableCard
@@ -218,7 +211,7 @@
       <template #footer>
         <button
           type="button"
-          @click="downloadEncrypted(selectedDocDetail)"
+          @click="selectedDocDetail && downloadEncrypted(selectedDocDetail)"
           class="h-8 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
         >
           Unduh (.enc)
@@ -250,14 +243,18 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+<script setup lang="ts">
+import { ref, shallowRef, computed, onMounted, onUnmounted } from "vue";
 import { documentService } from "../services";
-import { DocumentFilterRequestDTO, extractApiError } from "../dto";
+import { DocumentFilterRequestDTO, DocumentResponseDTO, extractApiError } from "../dto";
 import { usePermissions } from "../composables/usePermissions";
 import { useFormatters } from "../composables/useFormatters";
 import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
+import { isCanceledError } from "../utils/validators";
+import FilterToolbar from "../components/FilterToolbar.vue";
+import BaseSelect from "../components/BaseSelect.vue";
+import BaseButton from "../components/BaseButton.vue";
 import ConfirmModal from "../components/ConfirmModal.vue";
 import PageHeader from "../components/PageHeader.vue";
 import DataTableCard from "../components/DataTableCard.vue";
@@ -277,25 +274,35 @@ const {
 } = useFormatters();
 const toast = useToastStore();
 
-const documents = ref([]);
+const documents = shallowRef<DocumentResponseDTO[]>([]);
 const totalItems = ref(0);
 const isLoading = ref(false);
 const filterReq = ref(new DocumentFilterRequestDTO({ page: 1, per_page: 10 }));
-const selectedDocDetail = ref(null);
-const docToDelete = ref(null);
+const selectedDocDetail = ref<DocumentResponseDTO | null>(null);
+const docToDelete = ref<DocumentResponseDTO | null>(null);
 
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / filterReq.value.per_page)));
 
+let listAbortController: AbortController | null = null;
+
 async function loadDocuments() {
+  listAbortController?.abort();
+  listAbortController = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const controller = listAbortController;
   isLoading.value = true;
   try {
-    const resDto = await documentService.list(filterReq.value);
+    const resDto = await documentService.list(filterReq.value, {
+      signal: controller?.signal
+    });
     documents.value = resDto.items;
     totalItems.value = resDto.total ?? resDto.items.length;
-  } catch {
+  } catch (err: unknown) {
+    if (isCanceledError(err)) return;
     toast.show("Gagal memuat daftar dokumen.", "error");
   } finally {
-    isLoading.value = false;
+    if (listAbortController === controller) {
+      isLoading.value = false;
+    }
   }
 }
 
@@ -316,13 +323,13 @@ const debouncedSearch = debounce(() => {
   handleFilterChange();
 }, 300);
 
-function changePage(nextPage) {
+function changePage(nextPage: number) {
   if (nextPage < 1 || nextPage > totalPages.value) return;
   filterReq.value.page = nextPage;
   loadDocuments();
 }
 
-async function inspectDocument(docId) {
+async function inspectDocument(docId: number) {
   try {
     selectedDocDetail.value = await documentService.getById(docId);
   } catch {
@@ -330,7 +337,7 @@ async function inspectDocument(docId) {
   }
 }
 
-async function downloadEncrypted(doc) {
+async function downloadEncrypted(doc: DocumentResponseDTO) {
   try {
     const filename = await documentService.downloadEncrypted(doc);
     toast.show(`File ${filename} berhasil diunduh.`, "success");
@@ -359,6 +366,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  listAbortController?.abort();
   debouncedSearch.cancel?.();
 });
 </script>

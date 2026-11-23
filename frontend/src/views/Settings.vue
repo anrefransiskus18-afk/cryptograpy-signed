@@ -47,50 +47,38 @@
         </div>
 
         <div class="space-y-3 text-xs">
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">Nama Instansi / Unit Kerja</label>
-            <input
-              v-model="settings.organization_name"
-              type="text"
-              :disabled="!authStore.isAdmin"
-              class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-xs text-slate-900 disabled:opacity-60"
-            />
-          </div>
+          <BaseInput
+            v-model="settings.organization_name"
+            label="Nama Instansi / Unit Kerja"
+            :disabled="!authStore.isAdmin"
+          />
 
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">Durasi Sesi Login Pengguna (Menit)</label>
-            <input
-              v-model.number="settings.jwt_expiration_minutes"
-              type="number"
-              min="15"
-              max="1440"
-              :disabled="!authStore.isAdmin"
-              class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-xs text-slate-900 disabled:opacity-60"
-            />
-          </div>
+          <BaseInput
+            :modelValue="settings.jwt_expiration_minutes"
+            @update:modelValue="(v) => (settings.jwt_expiration_minutes = Number(v) || 15)"
+            type="number"
+            label="Durasi Sesi Login Pengguna (Menit)"
+            :disabled="!authStore.isAdmin"
+          />
 
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">Metode Penguncian File Default</label>
-            <select
-              v-model="settings.default_key_wrap_mode"
-              :disabled="!authStore.isAdmin"
-              class="w-full h-9 bg-slate-50 border border-slate-300 rounded-lg px-3 text-xs text-slate-900 disabled:opacity-60"
-            >
-              <option value="XOR_AAD">Standar Cepat (Format HC01 — Direkomendasikan)</option>
-              <option value="AES_GCM_KW">Perlindungan Lapis Ganda (Format HC02)</option>
-            </select>
-          </div>
+          <BaseSelect
+            v-model="settings.default_key_wrap_mode"
+            label="Metode Penguncian File Default"
+            :disabled="!authStore.isAdmin"
+          >
+            <option value="XOR_AAD">Standar Cepat (Format HC01 — Direkomendasikan)</option>
+            <option value="AES_GCM_KW">Perlindungan Lapis Ganda (Format HC02)</option>
+          </BaseSelect>
         </div>
 
-        <button
+        <BaseButton
           v-if="authStore.isAdmin"
-          type="button"
-          :disabled="isSaving"
+          :loading="isSaving"
+          block
           @click="saveSettings"
-          class="w-full h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-semibold cursor-pointer"
         >
           {{ isSaving ? "Menyimpan..." : "Simpan Pengaturan" }}
-        </button>
+        </BaseButton>
       </div>
     </div>
 
@@ -136,7 +124,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { settingsService } from "../services";
 import {
@@ -151,6 +139,9 @@ import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import PageHeader from "../components/PageHeader.vue";
 import SkeletonLoader from "../components/SkeletonLoader.vue";
+import BaseInput from "../components/BaseInput.vue";
+import BaseSelect from "../components/BaseSelect.vue";
+import BaseButton from "../components/BaseButton.vue";
 
 const authStore = useAuthStore();
 const toast = useToastStore();

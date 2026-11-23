@@ -13,7 +13,7 @@ function walk(dir) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
       files.push(...walk(full));
-    } else if (full.endsWith(".js") || full.endsWith(".vue")) {
+    } else if (full.endsWith(".ts") || full.endsWith(".js") || full.endsWith(".vue")) {
       files.push(full);
     }
   }
@@ -23,7 +23,7 @@ function walk(dir) {
 function resolveLocalImport(fromFile, spec) {
   if (!spec.startsWith(".")) return null;
   const base = resolve(dirname(fromFile), spec);
-  const candidates = [base, `${base}.js`, `${base}.vue`, join(base, "index.js")];
+  const candidates = [base, `${base}.ts`, `${base}.js`, `${base}.vue`, join(base, "index.ts"), join(base, "index.js")];
   for (const c of candidates) {
     if (existsSync(c) && statSync(c).isFile()) {
       return c;
@@ -53,11 +53,11 @@ for (const file of allFiles) {
   if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(content) && !content.includes("placeholder=")) {
     violations.push(`${rel}: terindikasi private key hardcoded`);
   }
-  if (rel !== "config/demo.js" && /Admin@2026!|KeyPass@2026!|PtXyz_StrongDbPass/.test(content)) {
-    violations.push(`${rel}: terindikasi kredensial demo/hardcoded di luar config/demo.js`);
+  if (rel !== "config/demo.ts" && /Admin@2026!|KeyPass@2026!|PtXyz_StrongDbPass/.test(content)) {
+    violations.push(`${rel}: terindikasi kredensial demo/hardcoded di luar config/demo.ts`);
   }
-  if (rel !== "utils/logger.js" && /\bconsole\.(log|info|warn|error)\s*\(/.test(content)) {
-    violations.push(`${rel}: gunakan utils/logger.js terpusat, jangan gunakan console.* langsung`);
+  if (rel !== "utils/logger.ts" && /\bconsole\.(log|info|warn|error)\s*\(/.test(content)) {
+    violations.push(`${rel}: gunakan utils/logger.ts terpusat, jangan gunakan console.* langsung`);
   }
 
   // 2. Layer boundary rules
