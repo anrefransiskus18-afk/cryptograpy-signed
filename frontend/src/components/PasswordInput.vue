@@ -5,16 +5,17 @@
       <button
         type="button"
         @click="show = !show"
+        :aria-pressed="show"
         class="text-[11px] font-medium text-indigo-600 hover:text-indigo-700 cursor-pointer"
       >
-        {{ show ? "Sembunyikan" : "Lihat Sandi" }}
+        {{ show ? t("components.hidePassword") : t("components.showPassword") }}
       </button>
     </div>
     <div class="relative">
       <input
         :id="inputId"
         :value="modelValue"
-        @input="$emit('update:modelValue', $event.target.value)"
+        @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
         :type="show ? 'text' : 'password'"
         :required="required"
         :minlength="minlength"
@@ -26,28 +27,42 @@
         v-if="!label"
         type="button"
         @click="show = !show"
+        :aria-pressed="show"
         class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-medium text-indigo-600 hover:text-indigo-700 cursor-pointer"
       >
-        {{ show ? "Sembunyikan" : "Lihat Sandi" }}
+        {{ show ? t("components.hidePassword") : t("components.showPassword") }}
       </button>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, useId } from "vue";
+import { useI18n } from "../i18n";
 
-defineProps({
-  modelValue: { type: String, default: "" },
-  label: { type: String, default: "" },
-  placeholder: { type: String, default: "" },
-  required: { type: Boolean, default: false },
-  minlength: { type: [Number, String], default: null },
-  inputClass: { type: String, default: "h-9 bg-slate-50" }
+export interface PasswordInputProps {
+  modelValue?: string;
+  label?: string;
+  placeholder?: string;
+  required?: boolean;
+  minlength?: number | string;
+  inputClass?: string;
+}
+
+withDefaults(defineProps<PasswordInputProps>(), {
+  modelValue: "",
+  label: "",
+  placeholder: "",
+  required: false,
+  minlength: undefined,
+  inputClass: "h-9 bg-slate-50"
 });
 
-defineEmits(["update:modelValue"]);
+defineEmits<{
+  (e: "update:modelValue", value: string): void;
+}>();
 
+const { t } = useI18n();
 const inputId = useId();
 const show = ref(false);
 </script>

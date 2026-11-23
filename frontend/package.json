@@ -11,7 +11,8 @@
     "test:coverage": "node --import ./tests/register-loader.mjs --test --experimental-test-coverage --test-coverage-exclude='tests/**' tests/*.test.js",
     "test:integration": "node --import ./tests/register-loader.mjs --test tests/integration.test.js",
     "lint:arch": "node scripts/check-architecture.mjs",
-    "check": "npm run lint:arch && npm test && npm run build"
+    "typecheck": "vue-tsc --noEmit",
+    "check": "npm run lint:arch && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "axios": "^1.7.9",
@@ -20,10 +21,13 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@types/node": "^26.6.6",
     "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
-    "vite": "^6.0.5"
+    "typescript": "^6.0.3",
+    "vite": "^6.0.5",
+    "vue-tsc": "^3.3.14"
   }
 }

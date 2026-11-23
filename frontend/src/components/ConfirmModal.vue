@@ -8,11 +8,11 @@
         >
           !
         </div>
-        <h3 class="text-sm font-bold text-slate-900">{{ title }}</h3>
+        <h3 class="text-sm font-bold text-slate-900">{{ resolvedTitle }}</h3>
       </div>
     </template>
 
-    <p class="text-xs text-slate-600 leading-relaxed">{{ message }}</p>
+    <p class="text-xs text-slate-600 leading-relaxed">{{ resolvedMessage }}</p>
 
     <template #footer>
       <button
@@ -20,7 +20,7 @@
         @click="$emit('cancel')"
         class="h-8 px-3.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-all cursor-pointer"
       >
-        Batal
+        {{ t("common.cancel") }}
       </button>
       <button
         type="button"
@@ -28,22 +28,40 @@
         class="h-8 px-3.5 rounded-lg text-xs font-semibold text-white shadow-sm transition-all cursor-pointer"
         :class="danger ? 'bg-rose-600 hover:bg-rose-700' : 'bg-indigo-600 hover:bg-indigo-700'"
       >
-        {{ confirmText }}
+        {{ resolvedConfirmText }}
       </button>
     </template>
   </BaseModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { computed } from "vue";
 import BaseModal from "./BaseModal.vue";
+import { useI18n } from "../i18n";
 
-defineProps({
-  open: { type: Boolean, default: false },
-  title: { type: String, default: "Konfirmasi Tindakan" },
-  message: { type: String, default: "Apakah Anda yakin ingin melanjutkan tindakan ini?" },
-  confirmText: { type: String, default: "Ya, Lanjutkan" },
-  danger: { type: Boolean, default: true }
+export interface ConfirmModalProps {
+  open?: boolean;
+  title?: string;
+  message?: string;
+  confirmText?: string;
+  danger?: boolean;
+}
+
+const props = withDefaults(defineProps<ConfirmModalProps>(), {
+  open: false,
+  title: "",
+  message: "",
+  confirmText: "",
+  danger: true
 });
 
-defineEmits(["confirm", "cancel"]);
+defineEmits<{
+  (e: "confirm"): void;
+  (e: "cancel"): void;
+}>();
+
+const { t } = useI18n();
+const resolvedTitle = computed(() => props.title || t("components.confirmTitle"));
+const resolvedMessage = computed(() => props.message || t("components.confirmMessage"));
+const resolvedConfirmText = computed(() => props.confirmText || t("components.confirmAction"));
 </script>

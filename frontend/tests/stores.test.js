@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createPinia, setActivePinia } from "pinia";
-import { useAuthStore } from "../src/stores/auth.js";
-import { useToastStore } from "../src/stores/toast.js";
-import { Lazy } from "../src/lib/lazy.js";
-import { UserProfileDTO } from "../src/dto/auth.dto.js";
+import { useAuthStore } from "../src/stores/auth.ts";
+import { useToastStore } from "../src/stores/toast.ts";
+import { Lazy } from "../src/lib/lazy.ts";
+import { UserProfileDTO } from "../src/dto/auth.dto.ts";
 
 function withMockStorage(fn) {
   const origLocal = globalThis.localStorage;

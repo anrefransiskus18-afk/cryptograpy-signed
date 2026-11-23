@@ -1,6 +1,7 @@
 <template>
   <div class="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-white border border-slate-200 rounded-xl p-6 sm:p-7 shadow-sm space-y-6">
+    <BaseCard padding="lg" class="max-w-md w-full">
+      <div class="space-y-6">
       <!-- Brand & Judul -->
       <div class="flex items-center justify-between gap-2">
         <button
@@ -44,18 +45,13 @@
 
       <!-- Form Login -->
       <form @submit.prevent="submitLogin" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            {{ t("login.usernameLabel") }}
-          </label>
-          <input
-            v-model="loginForm.username"
-            type="text"
-            required
-            :placeholder="t('login.usernamePlaceholder')"
-            class="h-10 w-full bg-slate-50 focus:bg-white border border-slate-300 rounded-lg px-3.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-600 transition-colors"
-          />
-        </div>
+        <BaseInput
+          v-model="loginForm.username"
+          :label="t('login.usernameLabel')"
+          :placeholder="t('login.usernamePlaceholder')"
+          inputClass="h-10 bg-slate-50 focus:bg-white px-3.5"
+          required
+        />
 
         <PasswordInput
           v-model="loginForm.password"
@@ -67,13 +63,9 @@
 
         <AlertBanner v-if="errorMsg" variant="error" :message="errorMsg" />
 
-        <button
-          type="submit"
-          :disabled="loading"
-          class="h-10 w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-semibold text-xs transition-colors cursor-pointer"
-        >
+        <BaseButton type="submit" :loading="loading" block class="h-10">
           {{ loading ? t("login.submitting") : t("login.submit") }}
-        </button>
+        </BaseButton>
       </form>
 
       <!-- Akun Demo (dapat dimatikan lewat VITE_SHOW_DEMO_ACCOUNTS=false) -->
@@ -97,11 +89,12 @@
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </BaseCard>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { authService } from "../services";
@@ -112,8 +105,13 @@ import { useI18n } from "../i18n";
 import { useTheme } from "../composables/useTheme";
 import PasswordInput from "../components/PasswordInput.vue";
 import AlertBanner from "../components/AlertBanner.vue";
+import BaseCard from "../components/BaseCard.vue";
+import BaseInput from "../components/BaseInput.vue";
+import BaseButton from "../components/BaseButton.vue";
 
-const emit = defineEmits(["auth-updated"]);
+const emit = defineEmits<{
+  (e: "auth-updated"): void;
+}>();
 const router = useRouter();
 const toast = useToastStore();
 const { locale, setLocale, t } = useI18n();
@@ -139,7 +137,7 @@ const demoAccounts = [
   { username: "penerima.sah", label: "Penerima Berwenang" }
 ];
 
-function fillAccount(user) {
+function fillAccount(user: string) {
   loginForm.value = new LoginRequestDTO({
     username: user,
     password: DEMO_PASSWORD

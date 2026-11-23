@@ -6,10 +6,15 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  label: { type: String, required: true },
-  value: { type: [String, Number], default: 0 },
-  subtitle: { type: String, default: "" }
+<script setup lang="ts">
+export interface StatCardProps {
+  label: string;
+  value?: string | number;
+  subtitle?: string;
+}
+
+withDefaults(defineProps<StatCardProps>(), {
+  value: 0,
+  subtitle: ""
 });
 </script>

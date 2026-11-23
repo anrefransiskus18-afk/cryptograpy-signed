@@ -5,13 +5,21 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 
-const props = defineProps({
-  variant: { type: String, default: "error" },
-  title: { type: String, default: "" },
-  message: { type: String, default: "" }
+export type AlertVariant = "error" | "success" | "warning";
+
+export interface AlertBannerProps {
+  variant?: AlertVariant;
+  title?: string;
+  message?: string;
+}
+
+const props = withDefaults(defineProps<AlertBannerProps>(), {
+  variant: "error",
+  title: "",
+  message: ""
 });
 
 const variantClasses = computed(() => {

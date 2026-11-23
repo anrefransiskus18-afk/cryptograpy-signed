@@ -1,12 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto, randomBytes } from "node:crypto";
-import { AadMetadataDTO, EncryptDocumentRequestDTO, DecryptDocumentRequestDTO } from "../src/dto/document.dto.js";
-import { EncryptionService, MAX_UPLOAD_BYTES } from "../src/services/EncryptionService.js";
-import { BaseRepository } from "../src/repositories/BaseRepository.js";
-import { sanitizeLogData } from "../src/utils/logger.js";
-import { ErrorType } from "../src/utils/errors.js";
-import { useFormatters } from "../src/composables/useFormatters.js";
+import { AadMetadataDTO, EncryptDocumentRequestDTO, DecryptDocumentRequestDTO } from "../src/dto/document.dto.ts";
+import { EncryptionService, MAX_UPLOAD_BYTES } from "../src/services/EncryptionService.ts";
+import { BaseRepository } from "../src/repositories/BaseRepository.ts";
+import { sanitizeLogData } from "../src/utils/logger.ts";
+import { ErrorType } from "../src/utils/errors.ts";
+import { useFormatters } from "../src/composables/useFormatters.ts";
 
 const subtle = webcrypto.subtle;
 
@@ -67,6 +67,35 @@ test("Cryptography Matrix: ECDH NIST P-256 + HKDF-SHA256 + SHA-256 + Key Import/
   // Official NIST SHA-256 test vector for "abc"
   const abcHash = Buffer.from(await subtle.digest("SHA-256", new TextEncoder().encode("abc"))).toString("hex");
   assert.equal(abcHash, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+});
+
+test("Cryptography KAT: NIST SP 800-38D AES-256-GCM & RFC 5869 HKDF-SHA256 known-answer vectors", async () => {
+  // 1. NIST SP 800-38D Test Case 13: 256-bit zero key, 96-bit zero IV, empty plaintext & AAD -> exact 128-bit auth tag
+  const zeroKeyBytes = new Uint8Array(32);
+  const zeroIv = new Uint8Array(12);
+  const aesKey = await subtle.importKey("raw", zeroKeyBytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+  const tagOnly = Buffer.from(
+    await subtle.encrypt({ name: "AES-GCM", iv: zeroIv }, aesKey, new Uint8Array(0))
+  ).toString("hex");
+  assert.equal(tagOnly, "530f8afbc74536b9a963b4f1c4cb738b");
+
+  // Adversarial: truncated ciphertext (< 16-byte tag) must fail
+  await assert.rejects(() =>
+    subtle.decrypt({ name: "AES-GCM", iv: zeroIv }, aesKey, new Uint8Array(15))
+  );
+
+  // 2. RFC 5869 Appendix A.1 Test Case 1 (HKDF-SHA256)
+  const ikm = new Uint8Array(22).fill(0x0b);
+  const salt = Uint8Array.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c]);
+  const info = Uint8Array.from([0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9]);
+  const hkdfKey = await subtle.importKey("raw", ikm, "HKDF", false, ["deriveBits"]);
+  const okm = Buffer.from(
+    await subtle.deriveBits({ name: "HKDF", hash: "SHA-256", salt, info }, hkdfKey, 42 * 8)
+  ).toString("hex");
+  assert.equal(
+    okm,
+    "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
+  );
 });
 
 test("AadMetadataDTO produces deterministic JSON string", () => {
@@ -161,7 +190,7 @@ test("useFormatters formats bytes, roles, classifications, actions, and statuses
 });
 
 test("sanitizeCsvCell neutralizes spreadsheet formula injection (CWE-1236)", async () => {
-  const { sanitizeCsvCell } = await import("../src/utils/file.js");
+  const { sanitizeCsvCell } = await import("../src/utils/file.ts");
   assert.equal(sanitizeCsvCell("=CMD('calc')"), "\"'=CMD('calc')\"");
   assert.equal(sanitizeCsvCell("+1+1"), "\"'+1+1\"");
   assert.equal(sanitizeCsvCell("-2+3"), "\"'-2+3\"");
@@ -170,13 +199,13 @@ test("sanitizeCsvCell neutralizes spreadsheet formula injection (CWE-1236)", asy
 });
 
 test("DEMO_MODE defaults to false when DEV is falsy and VITE_SHOW_DEMO_ACCOUNTS is unset", async () => {
-  const { DEMO_MODE, DEMO_PASSWORD } = await import("../src/config/demo.js");
+  const { DEMO_MODE, DEMO_PASSWORD } = await import("../src/config/demo.ts");
   assert.equal(DEMO_MODE, false);
   assert.equal(DEMO_PASSWORD, "");
 });
 
 test("i18n translates Indonesian and English keys with interpolation and fallback", async () => {
-  const { setLocale, t, locale } = await import("../src/i18n/index.js");
+  const { setLocale, t, locale } = await import("../src/i18n/index.ts");
   setLocale("id");
   assert.equal(locale.value, "id");
   assert.equal(t("nav.dashboard"), "Beranda");
@@ -199,7 +228,7 @@ test("Typed error classes preserve ErrorType semantics", async () => {
     TimeoutError,
     CryptographyError,
     normalizeApiError
-  } = await import("../src/utils/errors.js");
+  } = await import("../src/utils/errors.ts");
 
   const vErr = new ValidationError("invalid");
   assert.equal(vErr.type, ErrorType.VALIDATION);
@@ -214,14 +243,14 @@ test("Typed error classes preserve ErrorType semantics", async () => {
 });
 
 test("useTheme and usePermissions behave predictably", async () => {
-  const { setTheme, toggleTheme, useTheme } = await import("../src/composables/useTheme.js");
+  const { setTheme, toggleTheme, useTheme } = await import("../src/composables/useTheme.ts");
   const { isDark } = useTheme();
   setTheme("dark");
   assert.equal(isDark.value, true);
   toggleTheme();
   assert.equal(isDark.value, false);
 
-  const { usePermissions } = await import("../src/composables/usePermissions.js");
+  const { usePermissions } = await import("../src/composables/usePermissions.ts");
   const perms = usePermissions(() => ({
     isAdmin: false,
     user: { id: 5, role: "EXECUTIVE", clearance_level: 3 }

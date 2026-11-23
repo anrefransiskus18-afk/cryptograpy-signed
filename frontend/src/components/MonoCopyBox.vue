@@ -16,16 +16,26 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import CopyButton from "./CopyButton.vue";
 
-defineProps({
-  label: { type: String, default: "" },
-  value: { type: String, default: "" },
-  copyLabel: { type: String, default: "" },
-  copyText: { type: String, default: "Salin" },
-  copyable: { type: Boolean, default: true },
-  fallback: { type: String, default: "—" },
-  size: { type: String, default: "xs" }
+export interface MonoCopyBoxProps {
+  label?: string;
+  value?: string;
+  copyLabel?: string;
+  copyText?: string;
+  copyable?: boolean;
+  fallback?: string;
+  size?: "xs" | "sm";
+}
+
+withDefaults(defineProps<MonoCopyBoxProps>(), {
+  label: "",
+  value: "",
+  copyLabel: "",
+  copyText: "Salin",
+  copyable: true,
+  fallback: "—",
+  size: "xs"
 });
 </script>
