@@ -1,6 +1,6 @@
 import { cryptoRepository, type CryptoRepository } from "../repositories";
 import { AppError, ErrorType } from "../utils/errors";
-import { triggerBlobDownload } from "../utils/file";
+import { triggerBlobDownload, sanitizeFilename } from "../utils/file";
 import { flipLastBitInContainer } from "../utils/crypto/tamperSimulator";
 import { MAX_UPLOAD_BYTES } from "./EncryptionService";
 import type { DecryptDocumentRequestDTO, DocumentResponseDTO } from "../dto";
@@ -53,10 +53,27 @@ export class DecryptionService {
         type: ErrorType.VALIDATION
       });
     }
-    if (!payload?.use_stored_key && !payload?.private_key_pkcs8) {
-      throw new AppError("Kunci pribadi (.pem) wajib disertakan.", {
-        type: ErrorType.VALIDATION
-      });
+    if (!payload?.use_stored_key) {
+      const pem = typeof payload?.private_key_pkcs8 === "string" ? payload.private_key_pkcs8.trim() : "";
+      if (!pem) {
+        throw new AppError("Kunci pribadi (.pem) wajib disertakan.", {
+          type: ErrorType.VALIDATION
+        });
+      }
+      if (!pem.includes("-----BEGIN") || !pem.includes("PRIVATE KEY-----")) {
+        throw new AppError("Format kunci pribadi PEM tidak valid.", {
+          type: ErrorType.VALIDATION
+        });
+      }
+    }
+    if (typeof payload?.aad_json === "string" && payload.aad_json.trim()) {
+      try {
+        JSON.parse(payload.aad_json);
+      } catch {
+        throw new AppError("Format metadata AAD JSON tidak valid.", {
+          type: ErrorType.VALIDATION
+        });
+      }
     }
     if (!payload?.passphrase) {
       throw new AppError("Kata sandi kunci keamanan wajib diisi.", {
@@ -71,8 +88,10 @@ export class DecryptionService {
     });
 
     const rawFilename = payload.original_filename;
-    const downloadName =
-      typeof rawFilename === "string" && rawFilename ? rawFilename : "Dokumen_Terpulihkan";
+    const downloadName = sanitizeFilename(
+      typeof rawFilename === "string" && rawFilename ? rawFilename : "Dokumen_Terpulihkan",
+      "Dokumen_Terpulihkan"
+    );
     triggerBlobDownload(blob, downloadName);
     return { blob, filename: downloadName };
   }

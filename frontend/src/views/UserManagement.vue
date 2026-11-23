@@ -232,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, shallowRef, onMounted, onUnmounted } from "vue";
 import { userService } from "../services";
 import {
   UserFilterRequestDTO,
@@ -273,7 +273,7 @@ const ROLE_OPTIONS = [
   { value: "ADMINISTRATOR", label: "Administrator TI (Level 4)" }
 ];
 
-const users = ref<UserResponseDTO[]>([]);
+const users = shallowRef<UserResponseDTO[]>([]);
 const isLoading = ref(false);
 const filterReq = ref(new UserFilterRequestDTO());
 const showCreateModal = ref(false);

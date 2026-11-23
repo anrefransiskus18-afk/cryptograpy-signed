@@ -85,8 +85,9 @@
       <!-- 2. Penerima & Klasifikasi -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5">2. Pilih Penerima Dokumen</label>
+          <label :for="recipientSelectId" class="block text-xs font-semibold text-slate-700 mb-1.5">2. Pilih Penerima Dokumen</label>
           <select
+            :id="recipientSelectId"
             v-model="encryptReq.recipient_key_id"
             class="h-9 w-full bg-slate-50 border border-slate-300 rounded-lg px-3 text-xs text-slate-900 focus:outline-none focus:border-indigo-600"
           >
@@ -101,43 +102,33 @@
           </select>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5">3. Tingkat Kerahasiaan Dokumen</label>
-          <select
-            v-model="encryptReq.aad.classification"
-            class="h-9 w-full bg-slate-50 border border-slate-300 rounded-lg px-3 text-xs text-slate-900 focus:outline-none focus:border-indigo-600"
-          >
-            <option value="INTERNAL">Internal — Lingkup Perusahaan (Min. Level 1)</option>
-            <option value="CONFIDENTIAL">Terbatas / Confidential (Min. Level 2)</option>
-            <option value="SECRET">Rahasia / Secret (Min. Level 3)</option>
-            <option value="TOP_SECRET">Sangat Rahasia / Top Secret (Min. Level 4)</option>
-          </select>
-        </div>
+        <BaseSelect
+          v-model="encryptReq.aad.classification"
+          label="3. Tingkat Kerahasiaan Dokumen"
+        >
+          <option value="INTERNAL">Internal — Lingkup Perusahaan (Min. Level 1)</option>
+          <option value="CONFIDENTIAL">Terbatas / Confidential (Min. Level 2)</option>
+          <option value="SECRET">Rahasia / Secret (Min. Level 3)</option>
+          <option value="TOP_SECRET">Sangat Rahasia / Top Secret (Min. Level 4)</option>
+        </BaseSelect>
       </div>
 
       <AlertBanner v-if="clearanceWarning" variant="warning" :message="clearanceWarning" />
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Unit / Departemen Pengirim</label>
-          <input
-            v-model="encryptReq.aad.origin_department"
-            type="text"
-            placeholder="Contoh: Divisi Keuangan"
-            class="h-9 w-full bg-slate-50 border border-slate-300 rounded-lg px-3 text-xs text-slate-900 focus:outline-none focus:border-indigo-600"
-          />
-        </div>
+        <BaseInput
+          v-model="encryptReq.aad.origin_department"
+          label="Unit / Departemen Pengirim"
+          placeholder="Contoh: Divisi Keuangan"
+        />
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Metode Penguncian File</label>
-          <select
-            v-model="encryptReq.wrap_mode"
-            class="h-9 w-full bg-slate-50 border border-slate-300 rounded-lg px-3 text-xs text-slate-900 focus:outline-none focus:border-indigo-600"
-          >
-            <option value="XOR_AAD">Standar Cepat (Format HC01 — Direkomendasikan)</option>
-            <option value="AES_GCM_KW">Perlindungan Lapis Ganda (Format HC02)</option>
-          </select>
-        </div>
+        <BaseSelect
+          v-model="encryptReq.wrap_mode"
+          label="Metode Penguncian File"
+        >
+          <option value="XOR_AAD">Standar Cepat (Format HC01 — Direkomendasikan)</option>
+          <option value="AES_GCM_KW">Perlindungan Lapis Ganda (Format HC02)</option>
+        </BaseSelect>
       </div>
 
       <!-- Indikator Progres Unggah & Enkripsi -->
@@ -149,23 +140,21 @@
 
       <AlertBanner v-if="errorMessage" variant="error" :message="errorMessage" />
 
-      <button
-        type="button"
+      <BaseButton
+        :loading="isEncrypting"
         :disabled="isEncrypting || !encryptReq.document || !encryptReq.recipient_key_id || Boolean(clearanceWarning)"
+        block
+        class="h-10"
         @click="executeEncryption"
-        class="h-10 w-full rounded-lg font-semibold text-xs transition-colors flex items-center justify-center cursor-pointer"
-        :class="isEncrypting || !encryptReq.document || !encryptReq.recipient_key_id || Boolean(clearanceWarning)
-          ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-          : 'bg-indigo-600 hover:bg-indigo-700 text-white'"
       >
         {{ isEncrypting ? "Sedang Mengunci Dokumen..." : "Kunci Dokumen & Unduh Hasilnya (.enc)" }}
-      </button>
+      </BaseButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, useId } from "vue";
 import { useRoute } from "vue-router";
 import { cryptoService, encryptionService } from "../services";
 import {
@@ -182,6 +171,11 @@ import PageHeader from "../components/PageHeader.vue";
 import FileDropzone from "../components/FileDropzone.vue";
 import AlertBanner from "../components/AlertBanner.vue";
 import ProgressBar from "../components/ProgressBar.vue";
+import BaseSelect from "../components/BaseSelect.vue";
+import BaseInput from "../components/BaseInput.vue";
+import BaseButton from "../components/BaseButton.vue";
+
+const recipientSelectId = useId();
 
 const route = useRoute();
 const authStore = useAuthStore();

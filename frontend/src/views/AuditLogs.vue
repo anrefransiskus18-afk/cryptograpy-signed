@@ -59,12 +59,14 @@
           v-model="filterReq.search"
           @input="handleSearchInput"
           type="text"
+          aria-label="Cari nama pengguna atau IP"
           placeholder="Cari nama pengguna atau IP..."
           class="h-8 sm:w-60 bg-slate-50 border border-slate-200 rounded-lg px-3 text-xs text-slate-900 focus:outline-none focus:border-indigo-500"
         />
         <select
           v-if="activeTab === 'crypto'"
           v-model="filterReq.action_type"
+          aria-label="Filter jenis kegiatan"
           @change="loadLogs"
           class="h-8 bg-slate-50 border border-slate-200 rounded-lg px-3 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
         >
@@ -89,6 +91,7 @@
         <select
           v-if="activeTab === 'crypto'"
           v-model="filterReq.status"
+          aria-label="Filter status aktivitas"
           @change="loadLogs"
           class="h-8 bg-slate-50 border border-slate-200 rounded-lg px-3 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
         >
@@ -100,6 +103,7 @@
         <select
           v-if="activeTab === 'auth'"
           v-model="authStatusFilter"
+          aria-label="Filter hasil login"
           class="h-8 bg-slate-50 border border-slate-200 rounded-lg px-3 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
         >
           <option value="">Semua Hasil Login</option>
@@ -227,7 +231,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, shallowRef, computed, onMounted, onUnmounted } from "vue";
 import { auditService } from "../services";
 import { AuditFilterRequestDTO, AuditLogItemDTO, AuthLogItemDTO } from "../dto";
 import { usePermissions } from "../composables/usePermissions";
@@ -247,8 +251,8 @@ const toast = useToastStore();
 
 const activeTab = ref<"crypto" | "auth">("crypto");
 const isLoading = ref(false);
-const auditLogs = ref<AuditLogItemDTO[]>([]);
-const authLogs = ref<AuthLogItemDTO[]>([]);
+const auditLogs = shallowRef<AuditLogItemDTO[]>([]);
+const authLogs = shallowRef<AuthLogItemDTO[]>([]);
 const selectedLog = ref<AuditLogItemDTO | null>(null);
 const authStatusFilter = ref("");
 const verifyingChain = ref(false);

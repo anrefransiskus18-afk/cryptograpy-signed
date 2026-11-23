@@ -1,5 +1,11 @@
 <template>
   <div class="flex h-full w-full overflow-hidden relative">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-3 focus:py-2 focus:rounded-lg focus:bg-indigo-600 focus:text-white focus:text-xs focus:font-semibold"
+    >
+      Lewati ke konten utama
+    </a>
     <!-- Backdrop Mobile Drawer -->
     <div
       v-if="mobileMenuOpen"
@@ -140,7 +146,7 @@
       </header>
 
       <!-- Konten Halaman -->
-      <main class="flex-1 overflow-y-auto">
+      <main id="main-content" tabindex="-1" class="flex-1 overflow-y-auto focus:outline-none">
         <slot />
       </main>
     </div>

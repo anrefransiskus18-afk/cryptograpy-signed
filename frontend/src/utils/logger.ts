@@ -14,12 +14,18 @@ const SENSITIVE_KEYS = new Set([
   "encrypted_private_key_pem",
   "token",
   "access_token",
+  "refresh_token",
+  "jwt_token",
+  "csrf_token",
   "authorization",
   "secret",
   "session_key",
   "plaintext",
   "ciphertext"
 ]);
+
+const SENSITIVE_KEY_PATTERN = /token|password|passphrase|secret|private_key|session_key|authorization|api_key/i;
+const JWT_PATTERN = /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b/;
 
 export type LogLevel = "info" | "warn" | "error";
 
@@ -32,6 +38,9 @@ export function sanitizeLogData(value: unknown, depth = 0): unknown {
     }
     if (value.startsWith("Bearer ")) {
       return "Bearer [REDACTED]";
+    }
+    if (JWT_PATTERN.test(value)) {
+      return "[REDACTED_JWT]";
     }
     return value;
   }
@@ -51,7 +60,8 @@ export function sanitizeLogData(value: unknown, depth = 0): unknown {
   }
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-    if (SENSITIVE_KEYS.has(k.toLowerCase())) {
+    const lower = k.toLowerCase();
+    if (SENSITIVE_KEYS.has(lower) || SENSITIVE_KEY_PATTERN.test(lower)) {
       out[k] = "[REDACTED]";
     } else {
       out[k] = sanitizeLogData(v, depth + 1);

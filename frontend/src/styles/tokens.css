@@ -11,6 +11,8 @@
   --accent-primary-hover: #4338ca;
   --radius-card: 0.75rem;
   --radius-control: 0.5rem;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
 }
 
 html.dark {

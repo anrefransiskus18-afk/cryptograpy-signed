@@ -244,7 +244,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, shallowRef, computed, onMounted, onUnmounted } from "vue";
 import { documentService } from "../services";
 import { DocumentFilterRequestDTO, DocumentResponseDTO, extractApiError } from "../dto";
 import { usePermissions } from "../composables/usePermissions";
@@ -274,7 +274,7 @@ const {
 } = useFormatters();
 const toast = useToastStore();
 
-const documents = ref<DocumentResponseDTO[]>([]);
+const documents = shallowRef<DocumentResponseDTO[]>([]);
 const totalItems = ref(0);
 const isLoading = ref(false);
 const filterReq = ref(new DocumentFilterRequestDTO({ page: 1, per_page: 10 }));

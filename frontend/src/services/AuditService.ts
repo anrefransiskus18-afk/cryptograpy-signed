@@ -31,8 +31,8 @@ export class AuditService {
 
   exportLogsToCsv(
     activeTab: "crypto" | "auth",
-    auditLogs: Array<Record<string, unknown>>,
-    authLogs: Array<Record<string, unknown>>
+    auditLogs: ReadonlyArray<AuditLogItemDTO | Record<string, unknown>>,
+    authLogs: ReadonlyArray<AuthLogItemDTO | Record<string, unknown>>
   ): string {
     const dateSuffix = new Date().toISOString().slice(0, 10);
     if (activeTab === "auth") {
