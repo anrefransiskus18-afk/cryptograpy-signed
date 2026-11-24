@@ -64,7 +64,11 @@ mysql_ok = ensure_local_mysql_running()
 DEFAULT_SQLITE_PATH = Path(__file__).resolve().parent.parent / "hybrid_crypto.db"
 _mysql_password = os.getenv("MYSQL_PASSWORD", "")
 
-DATABASE_URL = os.getenv("DATABASE_URL") or (
+_raw_db_url = os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL") or ""
+if _raw_db_url.startswith("mysql://"):
+    _raw_db_url = _raw_db_url.replace("mysql://", "mysql+pymysql://", 1)
+
+DATABASE_URL = _raw_db_url or (
     f"mysql+pymysql://ptxyz_user:{_mysql_password}@127.0.0.1:3306/hybrid_crypto_db?charset=utf8mb4"
     if (mysql_ok and _mysql_password)
     else f"sqlite:///{DEFAULT_SQLITE_PATH}"

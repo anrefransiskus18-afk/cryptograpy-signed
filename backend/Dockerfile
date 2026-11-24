@@ -21,4 +21,4 @@ USER appuser
 EXPOSE 8000
 
 # 1 worker + multi-thread agar lock rantai hash audit log tetap sinkron
-CMD ["gunicorn", "--workers", "1", "--threads", "8", "--timeout", "300", "--bind", "0.0.0.0:8000", "wsgi:app"]
+CMD ["sh", "-c", "exec gunicorn --workers 1 --threads 8 --timeout 300 --bind 0.0.0.0:${PORT:-8000} wsgi:app"]

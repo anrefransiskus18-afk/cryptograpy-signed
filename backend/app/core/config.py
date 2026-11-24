@@ -70,7 +70,7 @@ class Config:
         problems = []
         if cls.JWT_SECRET_KEY == DEFAULT_JWT_SECRET or len(cls.JWT_SECRET_KEY) < 32:
             problems.append("JWT_SECRET_KEY wajib diisi dengan nilai acak minimal 32 karakter")
-        if not os.getenv("DATABASE_URL"):
+        if not (os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL")):
             problems.append("DATABASE_URL wajib diisi")
         if cls.SEED_DEFAULT_PASSWORD == DEFAULT_SEED_PASSWORD:
             problems.append("SEED_DEFAULT_PASSWORD wajib diganti dari nilai bawaan")
