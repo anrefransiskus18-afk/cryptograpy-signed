@@ -176,10 +176,11 @@ def init_database_and_seed():
 
 def _resolve_cors_origin(request_origin: str | None) -> str | None:
     """Kembalikan origin yang boleh mengakses API berdasarkan `Config.CORS_ORIGINS`."""
-    allowed = [o.strip() for o in Config.CORS_ORIGINS.split(",") if o.strip()]
+    allowed = [o.strip().rstrip("/") for o in Config.CORS_ORIGINS.split(",") if o.strip()]
     if "*" in allowed:
         return "*"
-    if request_origin and request_origin in allowed:
+    normalized_origin = request_origin.rstrip("/") if request_origin else None
+    if normalized_origin and normalized_origin in allowed:
         return request_origin
     return None
 

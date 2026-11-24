@@ -23,9 +23,44 @@ from .config import Config
 # Token blocklist in-memory (jti -> exp timestamp agar entri kedaluwarsa dapat dibersihkan)
 _REVOKED_TOKENS: dict[str, int] = {}
 
-# Sliding-window rate limiter per IP + endpoint
+# Sliding-window rate limiter per IP + endpoint (fallback in-memory bila REDIS_URL kosong)
 _RATE_BUCKETS: dict[str, list[float]] = defaultdict(list)
 _SECURITY_LOCK = threading.Lock()
+_REDIS_CLIENT = None
+_REDIS_INIT_ATTEMPTED = False
+
+
+def _get_redis_client():
+    """Mengembalikan klien Redis bersama bila `REDIS_URL` disetel & paket `redis` tersedia."""
+    global _REDIS_CLIENT, _REDIS_INIT_ATTEMPTED
+    redis_url = (Config.REDIS_URL or os.getenv("REDIS_URL") or "").strip()
+    if not redis_url:
+        return None
+    if _REDIS_CLIENT is not None:
+        return _REDIS_CLIENT
+    with _SECURITY_LOCK:
+        if _REDIS_CLIENT is not None:
+            return _REDIS_CLIENT
+        if _REDIS_INIT_ATTEMPTED:
+            return None
+        _REDIS_INIT_ATTEMPTED = True
+        try:
+            import redis  # type: ignore[import-not-found]
+
+            client = redis.Redis.from_url(
+                redis_url,
+                decode_responses=True,
+                socket_connect_timeout=1.5,
+                socket_timeout=1.5,
+            )
+            client.ping()
+            _REDIS_CLIENT = client
+            return _REDIS_CLIENT
+        except Exception as exc:
+            logging.getLogger(__name__).warning(
+                "Redis tidak tersedia (%s); beralih ke fallback in-memory/database.", exc
+            )
+            return None
 
 
 def _b64url_encode(data: bytes) -> str:
@@ -157,7 +192,15 @@ def decode_access_token(token: str) -> dict:
 
 
 def _is_token_revoked(jti: str) -> bool:
-    """Cek cepat di memori, lalu di database (berlaku lintas proses & setelah restart)."""
+    """Cek cepat di Redis (lintas replica), lalu memori lokal, lalu database."""
+    redis_client = _get_redis_client()
+    if redis_client is not None:
+        try:
+            if redis_client.exists(f"revoked_jwt:{jti}"):
+                return True
+        except Exception as exc:
+            logging.getLogger(__name__).warning("Gagal membaca blocklist Redis: %s", exc)
+
     now_ts = int(datetime.now(timezone.utc).timestamp())
     with _SECURITY_LOCK:
         exp_ts = _REVOKED_TOKENS.get(jti)
@@ -182,12 +225,21 @@ def _is_token_revoked(jti: str) -> bool:
 
 
 def revoke_token(jti: Optional[str], exp: Optional[int] = None) -> None:
-    """Cabut token: simpan di memori dan di database sampai masa berlakunya habis."""
+    """Cabut token: simpan di Redis (bila aktif), memori lokal, dan database sampai masa berlaku habis."""
     if not jti:
         return
     now_dt = datetime.now(timezone.utc)
     now_ts = int(now_dt.timestamp())
     exp_ts = int(exp) if exp else now_ts + max(Config.JWT_ACCESS_TOKEN_EXPIRES_MINUTES, 1440) * 60
+    ttl_seconds = max(1, exp_ts - now_ts)
+
+    redis_client = _get_redis_client()
+    if redis_client is not None:
+        try:
+            redis_client.setex(f"revoked_jwt:{jti}", ttl_seconds, "1")
+        except Exception as exc:
+            logging.getLogger(__name__).warning("Gagal menyimpan pencabutan token ke Redis: %s", exc)
+
     with _SECURITY_LOCK:
         if len(_REVOKED_TOKENS) > 1000:
             expired_keys = [k for k, v in _REVOKED_TOKENS.items() if v < now_ts]
@@ -218,8 +270,28 @@ def revoke_token(jti: Optional[str], exp: Optional[int] = None) -> None:
 
 
 def check_rate_limit(key: str, max_requests: int = 30, window_seconds: int = 60) -> bool:
-    """Memeriksa batas laju request (sliding window). Mengembalikan True jika diizinkan."""
+    """Memeriksa batas laju request (sliding window via Redis ZSET bila aktif, atau fallback in-memory)."""
     now = time.time()
+    redis_client = _get_redis_client()
+    if redis_client is not None:
+        redis_key = f"rate_limit:{key}"
+        cutoff = now - window_seconds
+        member = f"{now:.6f}:{uuid.uuid4().hex[:8]}"
+        try:
+            pipe = redis_client.pipeline()
+            pipe.zremrangebyscore(redis_key, 0, cutoff)
+            pipe.zcard(redis_key)
+            _, current_count = pipe.execute()
+            if int(current_count) >= max_requests:
+                return False
+            pipe = redis_client.pipeline()
+            pipe.zadd(redis_key, {member: now})
+            pipe.expire(redis_key, max(1, int(window_seconds) + 1))
+            pipe.execute()
+            return True
+        except Exception as exc:
+            logging.getLogger(__name__).warning("Redis rate limiter gagal (%s); fallback in-memory.", exc)
+
     with _SECURITY_LOCK:
         # Cegah pertumbuhan memori tak terbatas akibat key acak: bersihkan bucket kedaluwarsa secara berkala
         if len(_RATE_BUCKETS) > 5000:

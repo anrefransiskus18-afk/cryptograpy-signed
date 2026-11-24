@@ -61,6 +61,7 @@ class Config:
     LOGIN_MAX_FAILED_ATTEMPTS: int = int(os.getenv("LOGIN_MAX_FAILED_ATTEMPTS", "5"))
     LOGIN_LOCKOUT_SECONDS: int = int(os.getenv("LOGIN_LOCKOUT_SECONDS", str(15 * 60)))
     COOKIE_SAMESITE: str = os.getenv("COOKIE_SAMESITE") or "Lax"
+    REDIS_URL: str = os.getenv("REDIS_URL") or ""
 
     @classmethod
     def validate_for_production(cls) -> None:
