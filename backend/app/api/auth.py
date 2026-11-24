@@ -184,14 +184,15 @@ def handle_login():
             LoginResponseDTO,
             serialize=True,
         )
+        cookie_secure = Config.IS_PRODUCTION or Config.COOKIE_SAMESITE.lower() == "none"
         response = jsonify(res_payload)
         response.set_cookie(
             "access_token_cookie",
             access_token,
             max_age=Config.JWT_ACCESS_TOKEN_EXPIRES_MINUTES * 60,
             httponly=True,
-            secure=Config.IS_PRODUCTION,
-            samesite="Lax",
+            secure=cookie_secure,
+            samesite=Config.COOKIE_SAMESITE,
             path="/",
         )
         return response
@@ -224,8 +225,14 @@ def handle_logout():
             status="SUCCESS",
             metadata={"event": "User session terminated and JWT revoked"},
         )
+        cookie_secure = Config.IS_PRODUCTION or Config.COOKIE_SAMESITE.lower() == "none"
         response = jsonify({"message": "Logout berhasil. Token sesi telah dicabut."})
-        response.delete_cookie("access_token_cookie", path="/")
+        response.delete_cookie(
+            "access_token_cookie",
+            path="/",
+            samesite=Config.COOKIE_SAMESITE,
+            secure=cookie_secure,
+        )
         return response
     finally:
         db.close()

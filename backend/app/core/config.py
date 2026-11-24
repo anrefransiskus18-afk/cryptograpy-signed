@@ -39,7 +39,8 @@ class Config:
     CORS_ORIGINS: str = os.getenv("CORS_ORIGINS") or (
         "http://localhost:5173,http://127.0.0.1:5173,"
         "http://localhost:5174,http://127.0.0.1:5174,"
-        "http://localhost:5175,http://127.0.0.1:5175"
+        "http://localhost:5175,http://127.0.0.1:5175,"
+        "https://cryptograpy-signed.anrefransiskus18.workers.dev"
     )
     ENCRYPTED_STORAGE_DIR: Path = ENCRYPTED_STORAGE_DIR
     TEMP_STORAGE_DIR: Path = TEMP_STORAGE_DIR
@@ -59,6 +60,7 @@ class Config:
     # Masa berlaku catatan pencabutan token & jendela penguncian login
     LOGIN_MAX_FAILED_ATTEMPTS: int = int(os.getenv("LOGIN_MAX_FAILED_ATTEMPTS", "5"))
     LOGIN_LOCKOUT_SECONDS: int = int(os.getenv("LOGIN_LOCKOUT_SECONDS", str(15 * 60)))
+    COOKIE_SAMESITE: str = os.getenv("COOKIE_SAMESITE") or "Lax"
 
     @classmethod
     def validate_for_production(cls) -> None:
