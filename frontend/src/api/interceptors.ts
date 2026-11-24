@@ -1,7 +1,7 @@
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from "axios";
 import { Lazy, type StructTarget, type SerializeMode } from "../lib/lazy";
 import { logger } from "../utils/logger";
-import { clearAllSessionStorage } from "../utils/sessionStorage";
+import { clearAllSessionStorage, getStoredToken } from "../utils/sessionStorage";
 
 export interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
   queryStruct?: StructTarget;
@@ -30,6 +30,10 @@ function readCookie(name: string): string {
 export function attachInterceptors(client: AxiosInstance): void {
   client.interceptors.request.use((rawConfig) => {
     const config = rawConfig as ExtendedAxiosRequestConfig;
+    const token = getStoredToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
     const method = (config.method || "get").toLowerCase();
     if (["post", "put", "patch", "delete"].includes(method)) {

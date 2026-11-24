@@ -45,6 +45,7 @@ test("AuthStore manages session, admin getters, local private key, and storage s
     assert.equal(store.isAuthenticated, true);
     assert.equal(store.isAdmin, true);
     assert.equal(lMap.has("jwt_token"), false);
+    assert.equal(sMap.get("jwt_token"), "jwt-abc");
 
     store.setUser({ full_name: "Anre Updated" });
     assert.equal(store.user.full_name, "Anre Updated");

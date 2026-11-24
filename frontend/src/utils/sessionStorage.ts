@@ -11,13 +11,19 @@ export const SESSION_STORAGE_KEYS = {
 } as const;
 
 export function getStoredToken(): string {
-  return "";
+  if (typeof sessionStorage === "undefined") return "";
+  return sessionStorage.getItem(SESSION_STORAGE_KEYS.JWT_TOKEN) || "";
 }
 
-export function setStoredToken(_token: string): void {
-  // JWT session credentials are managed exclusively via HttpOnly cookie (`access_token_cookie`).
+export function setStoredToken(token: string): void {
   if (typeof localStorage !== "undefined") {
     localStorage.removeItem(SESSION_STORAGE_KEYS.JWT_TOKEN);
+  }
+  if (typeof sessionStorage === "undefined") return;
+  if (token) {
+    sessionStorage.setItem(SESSION_STORAGE_KEYS.JWT_TOKEN, token);
+  } else {
+    sessionStorage.removeItem(SESSION_STORAGE_KEYS.JWT_TOKEN);
   }
 }
 
@@ -69,6 +75,7 @@ export function clearAllSessionStorage(): void {
     localStorage.removeItem(SESSION_STORAGE_KEYS.CURRENT_USER);
   }
   if (typeof sessionStorage !== "undefined") {
+    sessionStorage.removeItem(SESSION_STORAGE_KEYS.JWT_TOKEN);
     sessionStorage.removeItem(SESSION_STORAGE_KEYS.LOCAL_PRIVATE_KEY);
     sessionStorage.removeItem(SESSION_STORAGE_KEYS.LOCAL_KEY_FINGERPRINT);
   }

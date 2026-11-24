@@ -84,7 +84,6 @@ test("Integration: EncryptionService -> CryptoRepository -> httpClient + Interce
     const file = new File(["kontrak rahasia"], "kontrak.pdf", { type: "application/pdf" });
     const res = await encSvc.encrypt({ document: file, recipient_key_id: 2 });
 
-    assert.equal(capturedHeaders.Authorization, undefined);
     assert.ok(capturedHeaders["X-Correlation-ID"]);
     assert.equal(res.docId, 101);
     assert.equal(res.header, "HC01");
