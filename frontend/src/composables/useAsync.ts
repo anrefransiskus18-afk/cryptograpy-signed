@@ -5,7 +5,7 @@ export interface UseAsyncOptions {
   immediate?: boolean;
 }
 
-export function useAsync<T = unknown, A extends any[] = any[]>(
+export function useAsync<T = unknown, A extends unknown[] = unknown[]>(
   asyncFn: (...args: [...A, AbortSignal | undefined]) => Promise<T>,
   { immediate = false }: UseAsyncOptions = {}
 ) {

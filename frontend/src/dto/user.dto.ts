@@ -2,6 +2,15 @@
  * User Management Request / Response DTO Structs
  */
 import { DEMO_KEY_PASSPHRASE, DEMO_NEW_USER_PASSWORD } from "../config/demo";
+import {
+  asBoolean,
+  asNullableNumber,
+  asNullableString,
+  asNumber,
+  asRecord,
+  asString,
+  asStringArray
+} from "../utils/validators";
 
 export class UserFilterRequestDTO {
   search: string;
@@ -123,21 +132,22 @@ export class UserResponseDTO {
   key_fingerprint: string | null;
   public_key_pem: string | null;
 
-  constructor(data: Record<string, any> = {}) {
-    this.id = Number(data.id || 0);
-    this.nik = data.nik || "";
-    this.username = data.username || "";
-    this.email = data.email || "";
-    this.full_name = data.full_name || "";
-    this.department = data.department || "";
-    this.role = data.role || "STAFF";
-    this.roles = Array.isArray(data.roles) ? data.roles : [this.role];
-    this.clearance_level = Number(data.clearance_level || 1);
-    this.is_active = Boolean(data.is_active ?? true);
-    this.deleted_at = data.deleted_at || null;
-    this.created_at = data.created_at || null;
-    this.key_fingerprint = data.key_fingerprint || null;
-    this.public_key_pem = data.public_key_pem || null;
+  constructor(data: Record<string, unknown> = {}) {
+    this.id = asNumber(data.id, 0);
+    this.nik = asString(data.nik);
+    this.username = asString(data.username);
+    this.email = asString(data.email);
+    this.full_name = asString(data.full_name);
+    this.department = asString(data.department);
+    this.role = asString(data.role, "STAFF");
+    const parsedRoles = asStringArray(data.roles);
+    this.roles = parsedRoles.length > 0 ? parsedRoles : [this.role];
+    this.clearance_level = asNumber(data.clearance_level, 1);
+    this.is_active = asBoolean(data.is_active, true);
+    this.deleted_at = asNullableString(data.deleted_at);
+    this.created_at = asNullableString(data.created_at);
+    this.key_fingerprint = asNullableString(data.key_fingerprint);
+    this.public_key_pem = asNullableString(data.public_key_pem);
   }
 }
 
@@ -150,9 +160,10 @@ export class UserMutationResponseDTO {
   id: number | null;
   user: UserResponseDTO;
 
-  constructor(data: Record<string, any> = {}) {
-    this.message = data.message || "";
-    this.id = data.id ?? data.user?.id ?? null;
-    this.user = data.user instanceof UserResponseDTO ? data.user : new UserResponseDTO(data.user || {});
+  constructor(data: Record<string, unknown> = {}) {
+    const rawUser = asRecord(data.user);
+    this.message = asString(data.message);
+    this.id = asNullableNumber(data.id ?? rawUser.id);
+    this.user = data.user instanceof UserResponseDTO ? data.user : new UserResponseDTO(rawUser);
   }
 }

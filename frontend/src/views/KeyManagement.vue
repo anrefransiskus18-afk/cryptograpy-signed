@@ -112,70 +112,11 @@
       </div>
 
       <!-- Kanan: Direktori Kunci Publik -->
-      <DataTableCard
-        class="lg:col-span-7"
+      <PublicKeyDirectoryTable
+        v-model:search="recipientSearch"
+        :keys="filteredDirectoryKeys"
         :loading="isLoading"
-        :empty="filteredDirectoryKeys.length === 0"
-        loadingText="Sedang memuat daftar penerima dokumen..."
-        emptyText="Tidak ada penerima dokumen yang sesuai dengan pencarian."
-      >
-        <template #header>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900">
-              Daftar Penerima Dokumen Terdaftar ({{ filteredDirectoryKeys.length }} Orang)
-            </h3>
-            <p class="text-xs text-slate-500 mt-0.5">
-              Pengguna di bawah ini memiliki kunci aktif dan siap menerima dokumen terkunci.
-            </p>
-          </div>
-          <input
-            v-model="recipientSearch"
-            type="text"
-            placeholder="Cari nama atau departemen..."
-            class="h-8 sm:w-56 bg-slate-50 border border-slate-200 rounded-lg px-3 text-xs text-slate-800 focus:outline-none focus:border-indigo-500"
-          />
-        </template>
-
-        <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold whitespace-nowrap">
-                <th class="py-3 px-4">Nama Lengkap</th>
-                <th class="py-3 px-4">Unit / Departemen</th>
-                <th class="py-3 px-4">Peran</th>
-                <th class="py-3 px-4">ID Kunci Digital</th>
-                <th class="py-3 px-4 text-right">Tindakan</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200">
-              <tr v-for="k in filteredDirectoryKeys" :key="k.key_id" class="hover:bg-slate-50">
-                <td class="py-3 px-4 whitespace-nowrap">
-                  <div class="font-semibold text-slate-900">{{ k.full_name }}</div>
-                  <div class="text-[11px] text-slate-400">@{{ k.username }}</div>
-                </td>
-                <td class="py-3 px-4 text-slate-600 whitespace-nowrap">{{ k.department }}</td>
-                <td class="py-3 px-4 whitespace-nowrap">
-                  <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-[11px]">
-                    {{ formatRole(k.role) }}
-                  </span>
-                </td>
-                <td class="py-3 px-4 font-mono text-[11px] text-slate-600 whitespace-nowrap">
-                  <div class="inline-flex items-center gap-1.5">
-                    <span>{{ (k.fingerprint || "—").slice(0, 18) }}...</span>
-                    <CopyButton :value="k.fingerprint" label="ID Kunci Digital" />
-                  </div>
-                </td>
-                <td class="py-3 px-4 text-right whitespace-nowrap">
-                  <router-link
-                    :to="`/encrypt?recipient_key_id=${k.key_id}`"
-                    class="h-7 px-2.5 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-[11px] inline-flex items-center"
-                  >
-                    Kirim File
-                  </router-link>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-      </DataTableCard>
+      />
     </div>
 
     <ConfirmModal
@@ -207,16 +148,15 @@ import ConfirmModal from "../components/ConfirmModal.vue";
 import PageHeader from "../components/PageHeader.vue";
 import StatusBadge from "../components/StatusBadge.vue";
 import MonoCopyBox from "../components/MonoCopyBox.vue";
-import CopyButton from "../components/CopyButton.vue";
 import PasswordInput from "../components/PasswordInput.vue";
 import AlertBanner from "../components/AlertBanner.vue";
-import DataTableCard from "../components/DataTableCard.vue";
+import PublicKeyDirectoryTable from "../components/keys/PublicKeyDirectoryTable.vue";
 import { DEMO_KEY_PASSPHRASE } from "../config/demo";
 
 const emit = defineEmits<{
   (e: "auth-updated"): void;
 }>();
-const { formatRole, formatTime } = useFormatters();
+const { formatTime } = useFormatters();
 const { t } = useI18n();
 const toast = useToastStore();
 

@@ -167,6 +167,7 @@ def get_audit_logs():
 
 @audit_bp.route("/api/audit-logs/verify-chain", methods=["GET"])
 @audit_bp.route("/api/v1/audit/verify-chain", methods=["GET"])
+@audit_bp.route("/api/v1/audit-logs/verify-chain", methods=["GET"])
 @jwt_required(allowed_roles=["ADMINISTRATOR", "SECURITY_ADMIN", "EXECUTIVE"])
 def verify_audit_chain():
     """

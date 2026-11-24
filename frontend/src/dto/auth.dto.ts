@@ -1,6 +1,7 @@
 /**
  * Auth & Profile Request / Response DTO Structs
  */
+import { asBoolean, asNullableString, asNumber, asRecord, asString } from "../utils/validators";
 
 export class LoginRequestDTO {
   username: string;
@@ -55,19 +56,19 @@ export class UserProfileDTO {
   encrypted_private_key_pem: string | null;
   has_encrypted_private_key: boolean;
 
-  constructor(data: Record<string, any> = {}) {
-    this.id = Number(data.id || 0);
-    this.nik = data.nik || "";
-    this.username = data.username || "";
-    this.email = data.email || "";
-    this.full_name = data.full_name || "";
-    this.department = data.department || "";
-    this.role = data.role || "STAFF";
-    this.clearance_level = Number(data.clearance_level || 1);
-    this.active_key_fingerprint = data.active_key_fingerprint || null;
-    this.active_public_key_pem = data.active_public_key_pem || null;
-    this.encrypted_private_key_pem = data.encrypted_private_key_pem || null;
-    this.has_encrypted_private_key = Boolean(
+  constructor(data: Record<string, unknown> = {}) {
+    this.id = asNumber(data.id, 0);
+    this.nik = asString(data.nik);
+    this.username = asString(data.username);
+    this.email = asString(data.email);
+    this.full_name = asString(data.full_name);
+    this.department = asString(data.department);
+    this.role = asString(data.role, "STAFF");
+    this.clearance_level = asNumber(data.clearance_level, 1);
+    this.active_key_fingerprint = asNullableString(data.active_key_fingerprint);
+    this.active_public_key_pem = asNullableString(data.active_public_key_pem);
+    this.encrypted_private_key_pem = asNullableString(data.encrypted_private_key_pem);
+    this.has_encrypted_private_key = asBoolean(
       data.has_encrypted_private_key ?? data.encrypted_private_key_pem
     );
   }
@@ -82,9 +83,12 @@ export class LoginResponseDTO {
   token_type: string;
   user: UserProfileDTO;
 
-  constructor(data: Record<string, any> = {}) {
-    this.access_token = data.access_token || "";
-    this.token_type = data.token_type || "bearer";
-    this.user = (data.user instanceof UserProfileDTO ? data.user : new UserProfileDTO(data.user || {}));
+  constructor(data: Record<string, unknown> = {}) {
+    this.access_token = asString(data.access_token);
+    this.token_type = asString(data.token_type, "bearer");
+    this.user =
+      data.user instanceof UserProfileDTO
+        ? data.user
+        : new UserProfileDTO(asRecord(data.user));
   }
 }

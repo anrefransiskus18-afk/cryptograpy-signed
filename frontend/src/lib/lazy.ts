@@ -9,28 +9,39 @@ export interface LazyTransformOptions {
   mode?: SerializeMode;
 }
 
-export interface StructConstructor<T = any> {
-  new (data?: any): T;
-  fromResponse?: (data: any) => T;
+export interface StructConstructor<T = unknown> {
+  new (data: never): T;
+  fromResponse?: (data: never) => T;
   schema?: Record<string, StructTarget>;
 }
 
 export type StructTarget =
-  | StructConstructor
-  | StructConstructor[]
+  | StructConstructor<unknown>
+  | StructConstructor<unknown>[]
   | SerializeMode
   | typeof FormData
   | null
   | undefined;
 
+interface SerializableObject extends Record<string, unknown> {
+  toFormData?: () => FormData;
+  toQueryParams?: () => Record<string, unknown>;
+  toPayload?: () => Record<string, unknown>;
+  toJSONString?: () => string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export class Lazy {
-  static transform<T = any>(
-    source: any,
+  static transform<T = unknown>(
+    source: unknown,
     TargetStruct: StructTarget = null,
     options: LazyTransformOptions = {}
   ): T {
     if (source === null || source === undefined) {
-      return source;
+      return source as T;
     }
 
     if (!TargetStruct || typeof TargetStruct === "string" || TargetStruct === FormData) {
@@ -43,12 +54,13 @@ export class Lazy {
 
     if (Array.isArray(TargetStruct)) {
       const ItemStruct = TargetStruct[0];
-      const list: any[] = Array.isArray(source)
+      const srcObj = isRecord(source) ? source : null;
+      const list: unknown[] = Array.isArray(source)
         ? source
-        : Array.isArray(source?.items)
-          ? source.items
-          : Array.isArray(source?.logs)
-            ? source.logs
+        : Array.isArray(srcObj?.items)
+          ? srcObj.items
+          : Array.isArray(srcObj?.logs)
+            ? srcObj.logs
             : [];
       return list.map((item) => Lazy.transform(item, ItemStruct, options)) as unknown as T;
     }
@@ -57,20 +69,22 @@ export class Lazy {
       return source.map((item) => Lazy.transform(item, TargetStruct, options)) as unknown as T;
     }
 
-    const Ctor = TargetStruct as StructConstructor;
-    let instance: any;
+    const Ctor = TargetStruct as StructConstructor<unknown>;
+    const normalizedSource = isRecord(source) ? source : {};
+    let instance: unknown;
     if (source instanceof Ctor) {
       instance = source;
     } else if (typeof Ctor.fromResponse === "function" && !options.serialize) {
-      instance = Ctor.fromResponse(source);
+      instance = (Ctor.fromResponse as (data: Record<string, unknown>) => unknown)(normalizedSource);
     } else {
-      instance = new Ctor(source);
+      instance = new (Ctor as new (data?: Record<string, unknown>) => unknown)(normalizedSource);
     }
 
-    if (Ctor.schema && typeof Ctor.schema === "object") {
+    if (Ctor.schema && typeof Ctor.schema === "object" && isRecord(instance)) {
       for (const [field, FieldStruct] of Object.entries(Ctor.schema)) {
-        if (instance[field] !== undefined && instance[field] !== null) {
-          instance[field] = Lazy.transform(instance[field], FieldStruct);
+        const fieldVal = instance[field];
+        if (fieldVal !== undefined && fieldVal !== null) {
+          instance[field] = Lazy.transform(fieldVal, FieldStruct);
         }
       }
     }
@@ -82,69 +96,72 @@ export class Lazy {
     return instance as T;
   }
 
-  static _serializeStruct(source: any, mode: SerializeMode = "auto"): any {
+  static _serializeStruct(source: unknown, mode: SerializeMode = "auto"): unknown {
     if (source === null || source === undefined) return source;
     if (typeof source !== "object") return source;
     if (source instanceof FormData || source instanceof Blob || source instanceof File) {
       return source;
     }
 
+    const obj = source as SerializableObject;
+
     if (mode === "formData") {
-      if (typeof source.toFormData === "function") {
-        return source.toFormData();
+      if (typeof obj.toFormData === "function") {
+        return obj.toFormData();
       }
-      return Lazy._objectToFormData(source);
+      return Lazy._objectToFormData(obj);
     }
 
     if (mode === "query" || mode === "params") {
-      if (typeof source.toQueryParams === "function") {
-        return source.toQueryParams();
+      if (typeof obj.toQueryParams === "function") {
+        return obj.toQueryParams();
       }
-      return Lazy._cleanObject(source, { stripEmptyString: true });
+      return Lazy._cleanObject(obj, { stripEmptyString: true });
     }
 
     if (mode === "payload" || mode === "json") {
-      if (typeof source.toPayload === "function") {
-        return source.toPayload();
+      if (typeof obj.toPayload === "function") {
+        return obj.toPayload();
       }
-      return Lazy._cleanObject(source);
+      return Lazy._cleanObject(obj);
     }
 
-    if (typeof source.toFormData === "function") {
-      return source.toFormData();
+    if (typeof obj.toFormData === "function") {
+      return obj.toFormData();
     }
-    if (typeof source.toPayload === "function") {
-      return source.toPayload();
+    if (typeof obj.toPayload === "function") {
+      return obj.toPayload();
     }
-    if (typeof source.toQueryParams === "function") {
-      return source.toQueryParams();
+    if (typeof obj.toQueryParams === "function") {
+      return obj.toQueryParams();
     }
 
     if (Array.isArray(source)) {
       return source.map((item) => Lazy._serializeStruct(item, "auto"));
     }
 
-    return Lazy._cleanObject(source);
+    return Lazy._cleanObject(obj);
   }
 
   static _cleanObject(
-    obj: Record<string, any>,
+    obj: Record<string, unknown>,
     { stripEmptyString = false }: { stripEmptyString?: boolean } = {}
-  ): Record<string, any> {
-    const out: Record<string, any> = {};
+  ): Record<string, unknown> {
+    const out: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(obj)) {
       if (val === undefined) continue;
       if (stripEmptyString && val === "") continue;
 
       if (val !== null && typeof val === "object" && !(val instanceof Blob) && !(val instanceof File)) {
-        if (typeof val.toJSONString === "function") {
-          out[key] = val.toJSONString();
-        } else if (typeof val.toPayload === "function") {
-          out[key] = val.toPayload();
+        const nested = val as SerializableObject;
+        if (typeof nested.toJSONString === "function") {
+          out[key] = nested.toJSONString();
+        } else if (typeof nested.toPayload === "function") {
+          out[key] = nested.toPayload();
         } else if (Array.isArray(val)) {
           out[key] = val.map((v) => Lazy._serializeStruct(v, "auto"));
         } else {
-          out[key] = Lazy._cleanObject(val, { stripEmptyString });
+          out[key] = Lazy._cleanObject(nested, { stripEmptyString });
         }
       } else {
         out[key] = val;
@@ -153,15 +170,16 @@ export class Lazy {
     return out;
   }
 
-  static _objectToFormData(obj: Record<string, any>): FormData {
+  static _objectToFormData(obj: Record<string, unknown>): FormData {
     const formData = new FormData();
     for (const [key, val] of Object.entries(obj)) {
       if (val === undefined || val === null) continue;
       if (val instanceof Blob || val instanceof File) {
         formData.append(key, val);
       } else if (typeof val === "object") {
-        if (typeof val.toJSONString === "function") {
-          formData.append(key, val.toJSONString());
+        const nested = val as SerializableObject;
+        if (typeof nested.toJSONString === "function") {
+          formData.append(key, nested.toJSONString());
         } else {
           formData.append(key, JSON.stringify(val));
         }

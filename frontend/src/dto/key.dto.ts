@@ -1,6 +1,21 @@
 /**
  * ECC Key Management Request / Response DTO Structs
  */
+import {
+  asBoolean,
+  asNullableNumber,
+  asNullableString,
+  asNumber,
+  asRecordArray,
+  asString
+} from "../utils/validators";
+
+export interface KeyHistoryItem {
+  id: number;
+  fingerprint: string;
+  created_at: string | null;
+  is_revoked: boolean;
+}
 
 export class KeyPassphraseRequestDTO {
   passphrase: string;
@@ -37,19 +52,19 @@ export class PublicKeyDirectoryItemDTO {
   public_key_pem: string;
   created_at: string | null;
 
-  constructor(data: Record<string, any> = {}) {
-    this.key_id = Number(data.key_id || 0);
-    this.user_id = Number(data.user_id || 0);
-    this.full_name = data.full_name || "";
-    this.username = data.username || "";
-    this.email = data.email || "";
-    this.department = data.department || "";
-    this.role = data.role || "STAFF";
-    this.clearance_level = Number(data.clearance_level || 1);
-    this.fingerprint = data.fingerprint || "";
-    this.curve = data.curve || "NIST P-256";
-    this.public_key_pem = data.public_key_pem || "";
-    this.created_at = data.created_at || null;
+  constructor(data: Record<string, unknown> = {}) {
+    this.key_id = asNumber(data.key_id, 0);
+    this.user_id = asNumber(data.user_id, 0);
+    this.full_name = asString(data.full_name);
+    this.username = asString(data.username);
+    this.email = asString(data.email);
+    this.department = asString(data.department);
+    this.role = asString(data.role, "STAFF");
+    this.clearance_level = asNumber(data.clearance_level, 1);
+    this.fingerprint = asString(data.fingerprint);
+    this.curve = asString(data.curve, "NIST P-256");
+    this.public_key_pem = asString(data.public_key_pem);
+    this.created_at = asNullableString(data.created_at);
   }
 }
 
@@ -64,20 +79,25 @@ export class MyKeyStatusResponseDTO {
   public_key_pem: string;
   encrypted_private_key_pem: string;
   created_at: string | null;
-  key_history: Array<Record<string, any>>;
+  key_history: KeyHistoryItem[];
 
-  constructor(data: Record<string, any> = {}) {
-    this.has_active_key = Boolean(data.has_active_key);
-    this.key_id = data.key_id ?? null;
-    this.user_id = data.user_id ?? null;
-    this.username = data.username || "";
-    this.fingerprint = data.fingerprint || "";
-    this.curve = data.curve || "NIST P-256";
-    this.kdf_protection = data.kdf_protection || "";
-    this.public_key_pem = data.public_key_pem || "";
-    this.encrypted_private_key_pem = data.encrypted_private_key_pem || "";
-    this.created_at = data.created_at || null;
-    this.key_history = Array.isArray(data.key_history) ? data.key_history : [];
+  constructor(data: Record<string, unknown> = {}) {
+    this.has_active_key = asBoolean(data.has_active_key);
+    this.key_id = asNullableNumber(data.key_id);
+    this.user_id = asNullableNumber(data.user_id);
+    this.username = asString(data.username);
+    this.fingerprint = asString(data.fingerprint);
+    this.curve = asString(data.curve, "NIST P-256");
+    this.kdf_protection = asString(data.kdf_protection);
+    this.public_key_pem = asString(data.public_key_pem);
+    this.encrypted_private_key_pem = asString(data.encrypted_private_key_pem);
+    this.created_at = asNullableString(data.created_at);
+    this.key_history = asRecordArray(data.key_history).map((item) => ({
+      id: asNumber(item.id, 0),
+      fingerprint: asString(item.fingerprint),
+      created_at: asNullableString(item.created_at),
+      is_revoked: asBoolean(item.is_revoked)
+    }));
   }
 }
 
@@ -89,13 +109,13 @@ export class KeyPairGeneratedResponseDTO {
   public_key_pem: string;
   private_key_pkcs8_pem: string;
 
-  constructor(data: Record<string, any> = {}) {
-    this.message = data.message || "Pasangan kunci ECC berhasil dibuat.";
-    this.key_id = data.key_id ?? null;
-    this.fingerprint = data.fingerprint || "";
-    this.curve = data.curve || "NIST P-256";
-    this.public_key_pem = data.public_key_pem || "";
-    this.private_key_pkcs8_pem = data.private_key_pkcs8_pem || "";
+  constructor(data: Record<string, unknown> = {}) {
+    this.message = asString(data.message, "Pasangan kunci ECC berhasil dibuat.");
+    this.key_id = asNullableNumber(data.key_id);
+    this.fingerprint = asString(data.fingerprint);
+    this.curve = asString(data.curve, "NIST P-256");
+    this.public_key_pem = asString(data.public_key_pem);
+    this.private_key_pkcs8_pem = asString(data.private_key_pkcs8_pem);
   }
 }
 
@@ -106,11 +126,11 @@ export class VerifyKeyResponseDTO {
   curve: string;
   detail: string;
 
-  constructor(data: Record<string, any> = {}) {
-    this.is_valid = Boolean(data.is_valid);
-    this.actual_fingerprint = data.actual_fingerprint || "";
-    this.expected_fingerprint = data.expected_fingerprint || "";
-    this.curve = data.curve || "NIST P-256";
-    this.detail = data.detail || "";
+  constructor(data: Record<string, unknown> = {}) {
+    this.is_valid = asBoolean(data.is_valid);
+    this.actual_fingerprint = asString(data.actual_fingerprint);
+    this.expected_fingerprint = asString(data.expected_fingerprint);
+    this.curve = asString(data.curve, "NIST P-256");
+    this.detail = asString(data.detail);
   }
 }

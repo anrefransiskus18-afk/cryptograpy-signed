@@ -1,6 +1,15 @@
 /**
  * Audit Trail, Dashboard, Settings & Benchmark Request / Response DTO Structs
  */
+import {
+  asBoolean,
+  asNullableNumber,
+  asNullableString,
+  asNumber,
+  asRecord,
+  asRecordArray,
+  asString
+} from "../utils/validators";
 
 export class AuditFilterRequestDTO {
   search: string;
@@ -52,26 +61,27 @@ export class AuditLogItemDTO {
   document_name: string | null;
   document_hash: string | null;
   ip_address: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   prev_log_hash: string;
   server_signature: string;
   signature_verified: boolean;
 
-  constructor(data: Record<string, any> = {}) {
-    this.id = Number(data.id || 0);
-    this.timestamp = data.timestamp || "";
-    this.user_id = data.user_id ?? null;
-    this.actor_identity = data.actor_identity || "";
-    this.action_type = data.action_type || "";
-    this.status = data.status || "SUCCESS";
-    this.document_id = data.document_id ?? null;
-    this.document_name = data.document_name || data.metadata?.document_name || null;
-    this.document_hash = data.document_hash || null;
-    this.ip_address = data.ip_address || "";
-    this.metadata = data.metadata || {};
-    this.prev_log_hash = data.prev_log_hash || "";
-    this.server_signature = data.server_signature || "";
-    this.signature_verified = Boolean(data.signature_verified ?? true);
+  constructor(data: Record<string, unknown> = {}) {
+    const meta = asRecord(data.metadata);
+    this.id = asNumber(data.id, 0);
+    this.timestamp = asString(data.timestamp);
+    this.user_id = asNullableNumber(data.user_id);
+    this.actor_identity = asString(data.actor_identity);
+    this.action_type = asString(data.action_type);
+    this.status = asString(data.status, "SUCCESS");
+    this.document_id = asNullableNumber(data.document_id);
+    this.document_name = asNullableString(data.document_name ?? meta.document_name);
+    this.document_hash = asNullableString(data.document_hash);
+    this.ip_address = asString(data.ip_address);
+    this.metadata = meta;
+    this.prev_log_hash = asString(data.prev_log_hash);
+    this.server_signature = asString(data.server_signature);
+    this.signature_verified = asBoolean(data.signature_verified, true);
   }
 }
 
@@ -84,10 +94,12 @@ export class AuditLogListResponseDTO {
   logs: AuditLogItemDTO[];
   total: number;
 
-  constructor(data: Record<string, any> = {}) {
-    this.server_signing_public_key_pem = data.server_signing_public_key_pem || "";
-    this.logs = Array.isArray(data.logs) ? data.logs : [];
-    this.total = Number(data.total ?? this.logs.length);
+  constructor(data: Record<string, unknown> = {}) {
+    this.server_signing_public_key_pem = asString(data.server_signing_public_key_pem);
+    this.logs = Array.isArray(data.logs)
+      ? data.logs.map((log) => (log instanceof AuditLogItemDTO ? log : new AuditLogItemDTO(asRecord(log))))
+      : [];
+    this.total = asNumber(data.total, this.logs.length);
   }
 }
 
@@ -102,16 +114,16 @@ export class AuthLogItemDTO {
   user_agent: string;
   failure_reason: string | null;
 
-  constructor(data: Record<string, any> = {}) {
-    this.id = Number(data.id || 0);
-    this.timestamp = data.timestamp || "";
-    this.user_id = data.user_id ?? null;
-    this.username_attempted = data.username_attempted || "";
-    this.event_type = data.event_type || "";
-    this.status = data.status || "";
-    this.ip_address = data.ip_address || "";
-    this.user_agent = data.user_agent || "";
-    this.failure_reason = data.failure_reason || null;
+  constructor(data: Record<string, unknown> = {}) {
+    this.id = asNumber(data.id, 0);
+    this.timestamp = asString(data.timestamp);
+    this.user_id = asNullableNumber(data.user_id);
+    this.username_attempted = asString(data.username_attempted);
+    this.event_type = asString(data.event_type);
+    this.status = asString(data.status);
+    this.ip_address = asString(data.ip_address);
+    this.user_agent = asString(data.user_agent);
+    this.failure_reason = asNullableString(data.failure_reason);
   }
 }
 
@@ -126,16 +138,16 @@ export class DashboardMetricsDTO {
   failed_logins: number;
   total_storage_bytes: number;
 
-  constructor(data: Record<string, any> = {}) {
-    this.total_users = Number(data.total_users || 0);
-    this.active_keys = Number(data.active_keys || 0);
-    this.total_documents = Number(data.total_documents || 0);
-    this.encrypted_documents = Number(data.encrypted_documents ?? data.total_encryptions ?? 0);
-    this.total_encryptions = Number(data.total_encryptions || 0);
-    this.total_decryptions = Number(data.total_decryptions || 0);
-    this.tamper_alerts = Number(data.tamper_alerts || 0);
-    this.failed_logins = Number(data.failed_logins || 0);
-    this.total_storage_bytes = Number(data.total_storage_bytes || 0);
+  constructor(data: Record<string, unknown> = {}) {
+    this.total_users = asNumber(data.total_users, 0);
+    this.active_keys = asNumber(data.active_keys, 0);
+    this.total_documents = asNumber(data.total_documents, 0);
+    this.encrypted_documents = asNumber(data.encrypted_documents ?? data.total_encryptions, 0);
+    this.total_encryptions = asNumber(data.total_encryptions, 0);
+    this.total_decryptions = asNumber(data.total_decryptions, 0);
+    this.tamper_alerts = asNumber(data.tamper_alerts, 0);
+    this.failed_logins = asNumber(data.failed_logins, 0);
+    this.total_storage_bytes = asNumber(data.total_storage_bytes, 0);
   }
 }
 
@@ -147,13 +159,13 @@ export class DashboardMyKeyDTO {
   public_key_pem: string | null;
   has_backup_private_key: boolean;
 
-  constructor(data: Record<string, any> = {}) {
-    this.has_active_key = Boolean(data.has_active_key);
-    this.fingerprint = data.fingerprint || null;
-    this.curve = data.curve || "NIST P-256";
-    this.created_at = data.created_at || null;
-    this.public_key_pem = data.public_key_pem || null;
-    this.has_backup_private_key = Boolean(data.has_backup_private_key);
+  constructor(data: Record<string, unknown> = {}) {
+    this.has_active_key = asBoolean(data.has_active_key);
+    this.fingerprint = asNullableString(data.fingerprint);
+    this.curve = asString(data.curve, "NIST P-256");
+    this.created_at = asNullableString(data.created_at);
+    this.public_key_pem = asNullableString(data.public_key_pem);
+    this.has_backup_private_key = asBoolean(data.has_backup_private_key);
   }
 }
 
@@ -169,18 +181,24 @@ export class DashboardResponseDTO {
   my_key: DashboardMyKeyDTO;
   recent_logs: AuditLogItemDTO[];
 
-  constructor(data: Record<string, any> = {}) {
+  constructor(data: Record<string, unknown> = {}) {
     this.metrics =
       data.metrics instanceof DashboardMetricsDTO
         ? data.metrics
-        : new DashboardMetricsDTO(data.metrics || {});
-    this.usage_statistics = data.usage_statistics || { classification_breakdown: {} };
+        : new DashboardMetricsDTO(asRecord(data.metrics));
+    const rawUsage = asRecord(data.usage_statistics);
+    const rawBreakdown = asRecord(rawUsage.classification_breakdown);
+    const breakdown: Record<string, number> = {};
+    for (const [k, v] of Object.entries(rawBreakdown)) {
+      breakdown[k] = asNumber(v, 0);
+    }
+    this.usage_statistics = { classification_breakdown: breakdown };
     this.my_key =
       data.my_key instanceof DashboardMyKeyDTO
         ? data.my_key
-        : new DashboardMyKeyDTO(data.my_key || {});
+        : new DashboardMyKeyDTO(asRecord(data.my_key));
     this.recent_logs = Array.isArray(data.recent_logs)
-      ? data.recent_logs.map((log) => (log instanceof AuditLogItemDTO ? log : new AuditLogItemDTO(log)))
+      ? data.recent_logs.map((log) => (log instanceof AuditLogItemDTO ? log : new AuditLogItemDTO(asRecord(log))))
       : [];
   }
 }
@@ -198,42 +216,61 @@ export class SystemSettingsDTO {
   jwt_expiration_minutes: number;
   max_upload_size_mb: number;
 
-  constructor(data: Record<string, any> = {}) {
-    const src = data.settings || data;
-    this.organization_name = src.organization_name || "PT XYZ — Divisi Keamanan Informasi Internal";
-    this.symmetric_algorithm = src.symmetric_algorithm || "AES-256-GCM";
-    this.asymmetric_curve = src.asymmetric_curve || "ECC NIST P-256";
-    this.key_agreement = src.key_agreement || "Ephemeral-Static ECDH";
-    this.kdf_algorithm = src.kdf_algorithm || "HKDF-SHA256";
-    this.password_hashing = src.password_hashing || "Argon2id";
-    this.private_key_format = src.private_key_format || "PKCS#8 PEM";
-    this.container_format_version = src.container_format_version || "HC01";
-    this.default_key_wrap_mode = src.default_key_wrap_mode || "XOR_AAD";
-    this.jwt_expiration_minutes = Number(src.jwt_expiration_minutes || 120);
-    this.max_upload_size_mb = Number(src.max_upload_size_mb || 125);
+  constructor(data: Record<string, unknown> = {}) {
+    const src = data.settings ? asRecord(data.settings) : data;
+    this.organization_name = asString(src.organization_name, "PT XYZ — Divisi Keamanan Informasi Internal");
+    this.symmetric_algorithm = asString(src.symmetric_algorithm, "AES-256-GCM");
+    this.asymmetric_curve = asString(src.asymmetric_curve, "ECC NIST P-256");
+    this.key_agreement = asString(src.key_agreement, "Ephemeral-Static ECDH");
+    this.kdf_algorithm = asString(src.kdf_algorithm, "HKDF-SHA256");
+    this.password_hashing = asString(src.password_hashing, "Argon2id");
+    this.private_key_format = asString(src.private_key_format, "PKCS#8 PEM");
+    this.container_format_version = asString(src.container_format_version, "HC01");
+    this.default_key_wrap_mode = asString(src.default_key_wrap_mode, "XOR_AAD");
+    this.jwt_expiration_minutes = asNumber(src.jwt_expiration_minutes, 120);
+    this.max_upload_size_mb = asNumber(src.max_upload_size_mb, 125);
   }
 }
 
+export interface BenchmarkPerformanceRow {
+  code: string;
+  label: string;
+  avg_encrypt_ms: number;
+  avg_decrypt_ms: number;
+  throughput_encrypt_mibs: number;
+  throughput_decrypt_mibs: number;
+  overhead_bytes: number;
+  ciphertext_entropy: number;
+  avalanche_effect_percent: number;
+}
+
 export class BenchmarkResponseDTO {
-  performance_results: Array<Record<string, any>>;
+  performance_results: BenchmarkPerformanceRow[];
   tamper_detection: {
     total_scenarios: number;
     detected_scenarios: number;
     detection_rate_percent: number;
-    scenarios: Array<Record<string, any>>;
+    scenarios: Array<Record<string, unknown>>;
   };
 
-  constructor(data: Record<string, any> = {}) {
-    this.performance_results = Array.isArray(data.performance_results)
-      ? data.performance_results
-      : [];
+  constructor(data: Record<string, unknown> = {}) {
+    this.performance_results = asRecordArray(data.performance_results).map((row) => ({
+      code: asString(row.code),
+      label: asString(row.label),
+      avg_encrypt_ms: asNumber(row.avg_encrypt_ms, 0),
+      avg_decrypt_ms: asNumber(row.avg_decrypt_ms, 0),
+      throughput_encrypt_mibs: asNumber(row.throughput_encrypt_mibs, 0),
+      throughput_decrypt_mibs: asNumber(row.throughput_decrypt_mibs, 0),
+      overhead_bytes: asNumber(row.overhead_bytes, 0),
+      ciphertext_entropy: asNumber(row.ciphertext_entropy, 0),
+      avalanche_effect_percent: asNumber(row.avalanche_effect_percent, 0)
+    }));
+    const td = asRecord(data.tamper_detection);
     this.tamper_detection = {
-      total_scenarios: Number(data.tamper_detection?.total_scenarios || 12),
-      detected_scenarios: Number(data.tamper_detection?.detected_scenarios || 12),
-      detection_rate_percent: Number(data.tamper_detection?.detection_rate_percent || 100.0),
-      scenarios: Array.isArray(data.tamper_detection?.scenarios)
-        ? data.tamper_detection.scenarios
-        : []
+      total_scenarios: asNumber(td.total_scenarios, 12),
+      detected_scenarios: asNumber(td.detected_scenarios, 12),
+      detection_rate_percent: asNumber(td.detection_rate_percent, 100.0),
+      scenarios: asRecordArray(td.scenarios)
     };
   }
 }

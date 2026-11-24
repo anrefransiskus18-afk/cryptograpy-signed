@@ -223,8 +223,10 @@ def create_app() -> Flask:
         allowed_origin = _resolve_cors_origin(request.headers.get("Origin"))
         if allowed_origin:
             response.headers["Access-Control-Allow-Origin"] = allowed_origin
-            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Correlation-ID"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = (
+                "Content-Type, Authorization, X-Correlation-ID, X-CSRF-Token"
+            )
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
             response.headers["Access-Control-Expose-Headers"] = (
                 "Content-Disposition, X-Container-Header, X-Recipient-Fingerprint, "
                 "X-GCM-Auth-Status, X-Document-Id, X-Encryption-Time-Ms, X-Shannon-Entropy, X-Correlation-ID"

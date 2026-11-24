@@ -28,7 +28,7 @@ export const API_ENDPOINTS = Object.freeze({
   AUDIT: {
     LOGS: "/audit",
     AUTH_LOGS: "/auth-logs",
-    VERIFY_CHAIN: "/audit-logs/verify-chain"
+    VERIFY_CHAIN: "/audit/verify-chain"
   },
   DASHBOARD: {
     STATS: "/stats"

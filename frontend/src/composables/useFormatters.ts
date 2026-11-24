@@ -1,6 +1,6 @@
 import { t } from "../i18n";
 
-export type DebouncedFn<A extends any[]> = ((...args: A) => void) & {
+export type DebouncedFn<A extends unknown[]> = ((...args: A) => void) & {
   cancel: () => void;
 };
 
@@ -86,7 +86,7 @@ export function useFormatters() {
     }
   }
 
-  function debounce<A extends any[]>(fn: (...args: A) => void, delay = 300): DebouncedFn<A> {
+  function debounce<A extends unknown[]>(fn: (...args: A) => void, delay = 300): DebouncedFn<A> {
     let timer: ReturnType<typeof setTimeout> | null = null;
     const debounced = ((...args: A) => {
       if (timer) clearTimeout(timer);

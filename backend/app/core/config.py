@@ -1,10 +1,13 @@
 import os
 from pathlib import Path
 
-try:  # Muat berkas .env (jika ada) sebelum membaca environment variable
+try:  # Muat berkas .env root & backend/.env (jika ada) sebelum membaca environment variable
     from dotenv import load_dotenv
 
-    load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
+    _backend_root = Path(__file__).resolve().parent.parent.parent
+    _repo_root = _backend_root.parent
+    load_dotenv(_repo_root / ".env")
+    load_dotenv(_backend_root / ".env", override=True)
 except ImportError:  # python-dotenv bersifat opsional
     pass
 
@@ -36,7 +39,11 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES_MINUTES: int = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_MINUTES", "120"))
     MAX_CONTENT_LENGTH: int = int(os.getenv("MAX_CONTENT_LENGTH", str(125 * 1024 * 1024)))  # 125 MiB (mendukung uji 100 MiB)
     # Daftar origin yang diizinkan (pisahkan koma). Gunakan "*" hanya untuk pengembangan.
-    CORS_ORIGINS: str = os.getenv("CORS_ORIGINS") or "http://localhost:5173,http://127.0.0.1:5173"
+    CORS_ORIGINS: str = os.getenv("CORS_ORIGINS") or (
+        "http://localhost:5173,http://127.0.0.1:5173,"
+        "http://localhost:5174,http://127.0.0.1:5174,"
+        "http://localhost:5175,http://127.0.0.1:5175"
+    )
     ENCRYPTED_STORAGE_DIR: Path = ENCRYPTED_STORAGE_DIR
     TEMP_STORAGE_DIR: Path = TEMP_STORAGE_DIR
     ALLOWED_EXTENSIONS: set[str] = {

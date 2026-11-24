@@ -1,6 +1,13 @@
 /**
  * Document & Cryptographic Operation Request / Response DTO Structs
  */
+import {
+  asNullableNumber,
+  asNullableString,
+  asNumber,
+  asRecord,
+  asString
+} from "../utils/validators";
 
 export class DocumentFilterRequestDTO {
   search: string;
@@ -76,7 +83,7 @@ export class EncryptDocumentRequestDTO {
   }: {
     document?: File | null;
     recipient_key_id?: number | null;
-    aad?: AadMetadataDTO | Record<string, any>;
+    aad?: AadMetadataDTO | { classification?: string; origin_department?: string; document_version?: string };
     wrap_mode?: string;
   } = {}) {
     this.document = document;
@@ -176,15 +183,15 @@ export class DocumentRecipientDTO {
   decrypted_count: number;
   last_decrypted_at: string | null;
 
-  constructor(data: Record<string, any> = {}) {
-    this.recipient_user_id = data.recipient_user_id ?? null;
-    this.recipient_username = data.recipient_username || "";
-    this.recipient_full_name = data.recipient_full_name || "Penerima";
-    this.recipient_department = data.recipient_department || "";
-    this.recipient_key_fingerprint = data.recipient_key_fingerprint || "";
-    this.access_status = data.access_status || "GRANTED";
-    this.decrypted_count = Number(data.decrypted_count || 0);
-    this.last_decrypted_at = data.last_decrypted_at || null;
+  constructor(data: Record<string, unknown> = {}) {
+    this.recipient_user_id = asNullableNumber(data.recipient_user_id);
+    this.recipient_username = asString(data.recipient_username);
+    this.recipient_full_name = asString(data.recipient_full_name, "Penerima");
+    this.recipient_department = asString(data.recipient_department);
+    this.recipient_key_fingerprint = asString(data.recipient_key_fingerprint);
+    this.access_status = asString(data.access_status, "GRANTED");
+    this.decrypted_count = asNumber(data.decrypted_count, 0);
+    this.last_decrypted_at = asNullableString(data.last_decrypted_at);
   }
 }
 
@@ -198,23 +205,23 @@ export class EncryptionMetadataDTO {
   iv_gcm_hex: string;
   auth_tag_gcm_hex: string;
   ephemeral_public_point_hex: string;
-  aad_json: Record<string, any>;
+  aad_json: Record<string, unknown>;
   shannon_entropy: number | null;
   encryption_duration_ms: number | null;
 
-  constructor(data: Record<string, any> = {}) {
-    this.container_magic = data.container_magic || data.container_version || "HC01";
-    this.container_version = data.container_version || data.container_magic || "HC01";
-    this.cipher_algorithm = data.cipher_algorithm || "AES-256-GCM";
-    this.ecc_curve = data.ecc_curve || "NIST P-256";
-    this.kdf_algorithm = data.kdf_algorithm || "HKDF-SHA256";
-    this.key_wrap_mode = data.key_wrap_mode || "XOR_AAD";
-    this.iv_gcm_hex = data.iv_gcm_hex || data.iv_nonce_hex || "";
-    this.auth_tag_gcm_hex = data.auth_tag_gcm_hex || data.auth_tag_hex || "";
-    this.ephemeral_public_point_hex = data.ephemeral_public_point_hex || data.ephemeral_pub_hex || "";
-    this.aad_json = data.aad_json || {};
-    this.shannon_entropy = data.shannon_entropy ?? null;
-    this.encryption_duration_ms = data.encryption_duration_ms ?? data.encryption_time_ms ?? null;
+  constructor(data: Record<string, unknown> = {}) {
+    this.container_magic = asString(data.container_magic ?? data.container_version, "HC01");
+    this.container_version = asString(data.container_version ?? data.container_magic, "HC01");
+    this.cipher_algorithm = asString(data.cipher_algorithm, "AES-256-GCM");
+    this.ecc_curve = asString(data.ecc_curve, "NIST P-256");
+    this.kdf_algorithm = asString(data.kdf_algorithm, "HKDF-SHA256");
+    this.key_wrap_mode = asString(data.key_wrap_mode, "XOR_AAD");
+    this.iv_gcm_hex = asString(data.iv_gcm_hex ?? data.iv_nonce_hex);
+    this.auth_tag_gcm_hex = asString(data.auth_tag_gcm_hex ?? data.auth_tag_hex);
+    this.ephemeral_public_point_hex = asString(data.ephemeral_public_point_hex ?? data.ephemeral_pub_hex);
+    this.aad_json = asRecord(data.aad_json);
+    this.shannon_entropy = asNullableNumber(data.shannon_entropy);
+    this.encryption_duration_ms = asNullableNumber(data.encryption_duration_ms ?? data.encryption_time_ms);
   }
 }
 
@@ -244,34 +251,40 @@ export class DocumentResponseDTO {
   recipients: DocumentRecipientDTO[];
   encryption_metadata: EncryptionMetadataDTO;
 
-  constructor(data: Record<string, any> = {}) {
-    this.id = Number(data.id || 0);
-    this.doc_uid = data.doc_uid || "";
-    this.original_filename = data.original_filename || "";
-    this.encrypted_filename = data.encrypted_filename || "";
-    this.file_extension = data.file_extension || "";
-    this.mime_type = data.mime_type || "application/octet-stream";
-    this.original_size_bytes = Number(data.original_size_bytes || 0);
-    this.encrypted_size_bytes = Number(data.encrypted_size_bytes || 0);
-    this.overhead_bytes = Number(data.overhead_bytes || 129);
-    this.sha256_plaintext_hash = data.sha256_plaintext_hash || "";
-    this.sha256_ciphertext_hash = data.sha256_ciphertext_hash || "";
-    this.sender_id = data.sender_id ?? null;
-    this.sender_username = data.sender_username || "";
-    this.sender_full_name = data.sender_full_name || data.sender_username || "";
-    this.classification = data.classification || "CONFIDENTIAL";
-    this.status = data.status || "ENCRYPTED";
-    this.created_at = data.created_at || null;
-    this.recipients = Array.isArray(data.recipients) ? data.recipients : [];
-    const meta =
-      data.encryption_metadata ||
-      data.cryptographic_parameters || {
+  constructor(data: Record<string, unknown> = {}) {
+    this.id = asNumber(data.id, 0);
+    this.doc_uid = asString(data.doc_uid);
+    this.original_filename = asString(data.original_filename);
+    this.encrypted_filename = asString(data.encrypted_filename);
+    this.file_extension = asString(data.file_extension);
+    this.mime_type = asString(data.mime_type, "application/octet-stream");
+    this.original_size_bytes = asNumber(data.original_size_bytes, 0);
+    this.encrypted_size_bytes = asNumber(data.encrypted_size_bytes, 0);
+    this.overhead_bytes = asNumber(data.overhead_bytes, 129);
+    this.sha256_plaintext_hash = asString(data.sha256_plaintext_hash);
+    this.sha256_ciphertext_hash = asString(data.sha256_ciphertext_hash);
+    this.sender_id = asNullableNumber(data.sender_id);
+    this.sender_username = asString(data.sender_username);
+    this.sender_full_name = asString(data.sender_full_name ?? data.sender_username);
+    this.classification = asString(data.classification, "CONFIDENTIAL");
+    this.status = asString(data.status, "ENCRYPTED");
+    this.created_at = asNullableString(data.created_at);
+    this.recipients = Array.isArray(data.recipients)
+      ? data.recipients.map((r) => (r instanceof DocumentRecipientDTO ? r : new DocumentRecipientDTO(asRecord(r))))
+      : [];
+    const metaRaw = data.encryption_metadata ?? data.cryptographic_parameters;
+    if (metaRaw instanceof EncryptionMetadataDTO) {
+      this.encryption_metadata = metaRaw;
+    } else if (metaRaw) {
+      this.encryption_metadata = new EncryptionMetadataDTO(asRecord(metaRaw));
+    } else {
+      this.encryption_metadata = new EncryptionMetadataDTO({
         aad_json: data.aad_json,
         shannon_entropy: data.shannon_entropy,
         encryption_time_ms: data.encryption_time_ms,
         container_magic: data.container_magic
-      };
-    this.encryption_metadata = meta instanceof EncryptionMetadataDTO ? meta : new EncryptionMetadataDTO(meta);
+      });
+    }
   }
 }
 
@@ -285,12 +298,15 @@ export class DocumentListResponseDTO {
   page: number;
   per_page: number;
 
-  constructor(data: Record<string, any> | any[] = {}) {
+  constructor(data: Record<string, unknown> | unknown[] = {}) {
     const raw = Array.isArray(data) ? { items: data } : data;
-    this.items = Array.isArray(data) ? data : raw.items || [];
-    this.total = Number(raw.total ?? this.items.length);
-    this.page = Number(raw.page || 1);
-    this.per_page = Number(raw.per_page || 50);
+    const rawItems = Array.isArray(data) ? data : Array.isArray(raw.items) ? raw.items : [];
+    this.items = rawItems.map((item) =>
+      item instanceof DocumentResponseDTO ? item : new DocumentResponseDTO(asRecord(item))
+    );
+    this.total = asNumber(raw.total, this.items.length);
+    this.page = asNumber(raw.page, 1);
+    this.per_page = asNumber(raw.per_page, 50);
   }
 }
 
