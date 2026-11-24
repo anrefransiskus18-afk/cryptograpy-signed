@@ -85,3 +85,4 @@ cd /home/anrefranciscus/hybrid-crypto-framework/backend
 | `direktur.keuangan` | `direktur.keuangan@corp.local` | `EXECUTIVE` | Level 3 | `Admin@2026!` | `KeyPass@2026!` |
 | `manajer.riset` | `manajer.riset@corp.local` | `MANAGER` | Level 2 | `Admin@2026!` | `KeyPass@2026!` |
 | `staf.operasional` | `staf.operasional@corp.local` | `STAFF` | Level 1 | `Admin@2026!` | `KeyPass@2026!` |
+
