@@ -11,15 +11,12 @@ export const SESSION_STORAGE_KEYS = {
 } as const;
 
 export function getStoredToken(): string {
-  if (typeof localStorage === "undefined") return "";
-  return localStorage.getItem(SESSION_STORAGE_KEYS.JWT_TOKEN) || "";
+  return "";
 }
 
-export function setStoredToken(token: string): void {
-  if (typeof localStorage === "undefined") return;
-  if (token) {
-    localStorage.setItem(SESSION_STORAGE_KEYS.JWT_TOKEN, token);
-  } else {
+export function setStoredToken(_token: string): void {
+  // JWT session credentials are managed exclusively via HttpOnly cookie (`access_token_cookie`).
+  if (typeof localStorage !== "undefined") {
     localStorage.removeItem(SESSION_STORAGE_KEYS.JWT_TOKEN);
   }
 }

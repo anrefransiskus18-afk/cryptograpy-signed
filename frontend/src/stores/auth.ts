@@ -6,15 +6,13 @@ import {
   getStoredKeyFingerprint,
   getStoredPrivateKey,
   getStoredRawUser,
-  getStoredToken,
   setStoredKeyFingerprint,
   setStoredPrivateKey,
-  setStoredToken,
   setStoredUser
 } from "../utils/sessionStorage";
 
 export const useAuthStore = defineStore("auth", () => {
-  const token = ref<string>(getStoredToken());
+  const token = ref<string>("");
   const user = ref<UserProfileDTO | null>((() => {
     try {
       const raw = getStoredRawUser();
@@ -26,7 +24,7 @@ export const useAuthStore = defineStore("auth", () => {
   const localPrivateKeyPem = ref<string>(getStoredPrivateKey());
   const localKeyFingerprint = ref<string>(getStoredKeyFingerprint());
 
-  const isAuthenticated = computed(() => Boolean(token.value && user.value));
+  const isAuthenticated = computed(() => Boolean(user.value));
   const isAdmin = computed(() => {
     const role = user.value?.role || "";
     const clearance = user.value?.clearance_level || 0;
@@ -35,7 +33,6 @@ export const useAuthStore = defineStore("auth", () => {
   const hasLocalPrivateKey = computed(() => Boolean(localPrivateKeyPem.value));
 
   function syncFromStorage(): void {
-    token.value = getStoredToken();
     try {
       const raw = getStoredRawUser();
       user.value = raw ? Lazy.transform<UserProfileDTO>(JSON.parse(raw), UserProfileDTO) : null;
@@ -49,7 +46,6 @@ export const useAuthStore = defineStore("auth", () => {
   function setSession(accessToken: string, userProfile: Record<string, unknown> | UserProfileDTO | null): void {
     token.value = accessToken || "";
     user.value = userProfile ? Lazy.transform<UserProfileDTO>(userProfile, UserProfileDTO) : null;
-    setStoredToken(token.value);
     setStoredUser(user.value);
   }
 

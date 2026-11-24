@@ -1,13 +1,10 @@
 import os
 from pathlib import Path
 
-try:  # Muat berkas .env root & backend/.env (jika ada) sebelum membaca environment variable
+try:  # Muat berkas backend/.env (jika ada) sebelum membaca environment variable
     from dotenv import load_dotenv
 
-    _backend_root = Path(__file__).resolve().parent.parent.parent
-    _repo_root = _backend_root.parent
-    load_dotenv(_repo_root / ".env")
-    load_dotenv(_backend_root / ".env", override=True)
+    load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 except ImportError:  # python-dotenv bersifat opsional
     pass
 

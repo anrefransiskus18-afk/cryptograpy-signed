@@ -44,7 +44,7 @@ test("AuthStore manages session, admin getters, local private key, and storage s
     });
     assert.equal(store.isAuthenticated, true);
     assert.equal(store.isAdmin, true);
-    assert.equal(lMap.get("jwt_token"), "jwt-abc");
+    assert.equal(lMap.has("jwt_token"), false);
 
     store.setUser({ full_name: "Anre Updated" });
     assert.equal(store.user.full_name, "Anre Updated");
@@ -60,11 +60,11 @@ test("AuthStore manages session, admin getters, local private key, and storage s
     assert.equal(lMap.has("jwt_token"), false);
     assert.equal(sMap.has("local_pkcs8_private_key"), false);
 
-    lMap.set("jwt_token", "jwt-sync");
     lMap.set("current_user", JSON.stringify({ id: 2, username: "staff", role: "STAFF", clearance_level: 1 }));
     store.syncFromStorage();
     assert.equal(store.isAuthenticated, true);
     assert.equal(store.isAdmin, false);
+    assert.equal(lMap.has("jwt_token"), false);
   });
 });
 

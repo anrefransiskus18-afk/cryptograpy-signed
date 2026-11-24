@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 import { t } from "../i18n";
-import { clearAllSessionStorage, getStoredRawUser, getStoredToken } from "../utils/sessionStorage";
+import { clearAllSessionStorage, getStoredRawUser } from "../utils/sessionStorage";
 
 declare module "vue-router" {
   interface RouteMeta {
@@ -90,12 +90,8 @@ const router = createRouter({
 });
 
 function hasValidStoredSession(): boolean {
-  const token = getStoredToken();
   const rawUser = getStoredRawUser();
-  if (!token || !rawUser) {
-    if (token || rawUser) {
-      clearAllSessionStorage();
-    }
+  if (!rawUser) {
     return false;
   }
   try {
