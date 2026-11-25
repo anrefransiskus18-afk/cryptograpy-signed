@@ -4,8 +4,9 @@
       <slot name="header" />
     </div>
 
-    <div v-if="loading" class="p-10 text-center text-xs text-slate-500">
-      {{ resolvedLoadingText }}
+    <div v-if="loading" class="p-6 space-y-3">
+      <SkeletonLoader :rows="4" />
+      <p class="text-center text-xs text-slate-500">{{ resolvedLoadingText }}</p>
     </div>
 
     <div v-else-if="empty" class="p-10 text-center text-xs text-slate-500">
@@ -25,6 +26,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "../i18n";
+import SkeletonLoader from "./SkeletonLoader.vue";
 
 export interface DataTableCardProps {
   loading?: boolean;

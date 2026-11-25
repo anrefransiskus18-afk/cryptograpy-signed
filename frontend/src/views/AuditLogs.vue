@@ -6,30 +6,21 @@
       :subtitle="t('audit.subtitle')"
     >
       <template #actions>
-        <button
+        <BaseButton
           v-if="canVerifyAuditChain"
-          type="button"
+          variant="secondary"
+          size="md"
+          :loading="verifyingChain"
           @click="verifyChain"
-          :disabled="verifyingChain"
-          class="h-9 px-3.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 cursor-pointer disabled:opacity-50"
         >
           {{ verifyingChain ? t("audit.verifyingChain") : t("audit.verifyChain") }}
-        </button>
-        <button
-          type="button"
-          @click="exportCsv"
-          class="h-9 px-3.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
-        >
+        </BaseButton>
+        <BaseButton variant="secondary" size="md" @click="exportCsv">
           {{ t("audit.exportCsv") }}
-        </button>
-        <button
-          type="button"
-          :disabled="isLoading"
-          @click="loadLogs"
-          class="h-9 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white cursor-pointer disabled:opacity-50"
-        >
+        </BaseButton>
+        <BaseButton variant="primary" size="md" :loading="isLoading" @click="loadLogs">
           {{ isLoading ? t("common.loading") : t("common.reload") }}
-        </button>
+        </BaseButton>
       </template>
     </PageHeader>
 
@@ -77,6 +68,10 @@
           <option value="TAMPER_DETECTED">File Rusak / Manipulasi Ditolak</option>
           <option value="DOCUMENT_DOWNLOADED">Mengunduh File Terkunci</option>
           <option value="DOCUMENT_DELETED">Menghapus Dokumen</option>
+          <option value="ACCESS_REVOKED">Mencabut Akses Penerima</option>
+          <option value="ACCESS_RESTORED">Memulihkan Akses Penerima</option>
+          <option value="ACCESS_DENIED_REVOKED">Dekripsi Ditolak (Akses Dicabut)</option>
+          <option value="ACCESS_DENIED_EXPIRED">Dekripsi Ditolak (Kedaluwarsa)</option>
           <option value="KEY_GENERATED">Membuat Kunci Baru</option>
           <option value="KEY_ROTATED">Memperbarui Kunci</option>
           <option value="LOGIN">Masuk ke Sistem (Login)</option>
@@ -239,6 +234,7 @@ import { useFormatters } from "../composables/useFormatters";
 import { useI18n } from "../i18n";
 import { useToastStore } from "../stores/toast";
 import PageHeader from "../components/PageHeader.vue";
+import BaseButton from "../components/BaseButton.vue";
 import DataTableCard from "../components/DataTableCard.vue";
 import StatusBadge from "../components/StatusBadge.vue";
 import AuditDetailModal from "../components/audit/AuditDetailModal.vue";

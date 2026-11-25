@@ -6,22 +6,17 @@
       :subtitle="t('users.subtitle')"
     >
       <template #actions>
-        <button
-          type="button"
-          :disabled="isLoading"
-          @click="loadUsers"
-          class="h-9 px-3.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 cursor-pointer disabled:opacity-50"
-        >
+        <BaseButton variant="secondary" size="md" :loading="isLoading" @click="loadUsers">
           {{ isLoading ? t("common.loading") : t("common.reload") }}
-        </button>
-        <button
+        </BaseButton>
+        <BaseButton
           v-if="authStore.isAdmin"
-          type="button"
+          variant="primary"
+          size="md"
           @click="showCreateModal = true"
-          class="h-9 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white cursor-pointer"
         >
           {{ t("users.addUser") }}
-        </button>
+        </BaseButton>
       </template>
     </PageHeader>
 
@@ -253,6 +248,7 @@ import StatusBadge from "../components/StatusBadge.vue";
 import BaseModal from "../components/BaseModal.vue";
 import PasswordInput from "../components/PasswordInput.vue";
 import FilterToolbar from "../components/FilterToolbar.vue";
+import BaseButton from "../components/BaseButton.vue";
 import BaseSelect from "../components/BaseSelect.vue";
 import UserCreateModal from "../components/users/UserCreateModal.vue";
 import UserEditModal from "../components/users/UserEditModal.vue";

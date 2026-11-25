@@ -130,34 +130,26 @@
                 {{ formatTime(doc.created_at) }}
               </td>
               <td class="py-3 px-4 text-right whitespace-nowrap space-x-1.5">
-                <button
-                  type="button"
-                  @click="inspectDocument(doc.id)"
-                  class="h-7 px-2.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-[11px] cursor-pointer"
-                >
+                <BaseButton variant="secondary" size="xs" @click="inspectDocument(doc.id)">
                   Info File
-                </button>
-                <button
-                  type="button"
-                  @click="downloadEncrypted(doc)"
-                  class="h-7 px-2.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-[11px] cursor-pointer"
-                >
+                </BaseButton>
+                <BaseButton variant="secondary" size="xs" @click="downloadEncrypted(doc)">
                   Unduh (.enc)
-                </button>
+                </BaseButton>
                 <router-link
                   :to="`/decrypt?document_id=${doc.id}`"
                   class="h-7 px-2.5 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-[11px] inline-flex items-center"
                 >
                   Buka Isi
                 </router-link>
-                <button
+                <BaseButton
                   v-if="canDeleteDoc(doc)"
-                  type="button"
+                  variant="danger"
+                  size="xs"
                   @click="docToDelete = doc"
-                  class="h-7 px-2.5 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-700 font-medium text-[11px] cursor-pointer"
                 >
                   Hapus
-                </button>
+                </BaseButton>
               </td>
             </tr>
           </tbody>
@@ -233,22 +225,24 @@
                 </span>
               </div>
             </div>
-            <button
+            <BaseButton
               v-if="canDeleteDoc(selectedDocDetail) && r.recipient_user_id && r.access_status !== 'REVOKED'"
-              type="button"
+              variant="danger"
+              size="xs"
+              class="shrink-0"
               @click="revokeRecipient(selectedDocDetail, r.recipient_user_id)"
-              class="h-7 px-2.5 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-[11px] shrink-0 cursor-pointer"
             >
               Cabut Akses
-            </button>
-            <button
+            </BaseButton>
+            <BaseButton
               v-else-if="canDeleteDoc(selectedDocDetail) && r.recipient_user_id && r.access_status === 'REVOKED'"
-              type="button"
+              variant="secondary"
+              size="xs"
+              class="shrink-0 text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100"
               @click="restoreRecipient(selectedDocDetail, r.recipient_user_id)"
-              class="h-7 px-2.5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-[11px] shrink-0 cursor-pointer"
             >
               Pulihkan Akses
-            </button>
+            </BaseButton>
           </div>
         </div>
         <MonoCopyBox
