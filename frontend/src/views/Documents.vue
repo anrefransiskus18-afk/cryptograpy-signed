@@ -101,7 +101,19 @@
                 <div class="truncate text-slate-700 font-medium">
                   {{ doc.sender_full_name }} &rarr; {{ doc.recipients[0]?.recipient_full_name || "Penerima" }}
                 </div>
-                <div class="text-[11px] mt-0.5">
+                <div class="text-[11px] mt-0.5 flex flex-wrap items-center gap-1.5">
+                  <span
+                    v-if="doc.recipients[0]?.access_status === 'REVOKED'"
+                    class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 font-semibold text-[10px]"
+                  >
+                    DICABUT
+                  </span>
+                  <span
+                    v-else-if="isDocumentExpired(doc)"
+                    class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-semibold text-[10px]"
+                  >
+                    KEDALUWARSA
+                  </span>
                   <span
                     v-if="(doc.recipients[0]?.decrypted_count ?? 0) > 0"
                     class="text-emerald-700 font-medium"
@@ -228,6 +240,14 @@
               class="h-7 px-2.5 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-[11px] shrink-0 cursor-pointer"
             >
               Cabut Akses
+            </button>
+            <button
+              v-else-if="canDeleteDoc(selectedDocDetail) && r.recipient_user_id && r.access_status === 'REVOKED'"
+              type="button"
+              @click="restoreRecipient(selectedDocDetail, r.recipient_user_id)"
+              class="h-7 px-2.5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-[11px] shrink-0 cursor-pointer"
+            >
+              Pulihkan Akses
             </button>
           </div>
         </div>
@@ -396,6 +416,12 @@ async function executeDelete() {
   }
 }
 
+function isDocumentExpired(doc: DocumentResponseDTO): boolean {
+  if (!doc.expires_at) return false;
+  const ts = new Date(doc.expires_at).getTime();
+  return Number.isFinite(ts) && ts < Date.now();
+}
+
 async function revokeRecipient(doc: DocumentResponseDTO, recipientUserId: number) {
   try {
     await documentService.revokeRecipientAccess(doc.id, recipientUserId);
@@ -404,6 +430,17 @@ async function revokeRecipient(doc: DocumentResponseDTO, recipientUserId: number
     await loadDocuments();
   } catch (err) {
     toast.show(extractApiError(err, "Gagal mencabut akses penerima."), "error");
+  }
+}
+
+async function restoreRecipient(doc: DocumentResponseDTO, recipientUserId: number) {
+  try {
+    await documentService.restoreRecipientAccess(doc.id, recipientUserId);
+    toast.show("Hak akses penerima berhasil dipulihkan dan dicatat di Audit Log.", "success");
+    selectedDocDetail.value = await documentService.getById(doc.id);
+    await loadDocuments();
+  } catch (err) {
+    toast.show(extractApiError(err, "Gagal memulihkan akses penerima."), "error");
   }
 }
 

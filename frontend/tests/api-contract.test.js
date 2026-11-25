@@ -19,6 +19,7 @@ test("Contract: API_ENDPOINTS match canonical /api/v1 backend routes", () => {
   assert.equal(API_ENDPOINTS.DOCUMENTS.BY_ID(42), "/documents/42");
   assert.equal(API_ENDPOINTS.DOCUMENTS.DOWNLOAD(42), "/documents/42/download");
   assert.equal(API_ENDPOINTS.DOCUMENTS.REVOKE_RECIPIENT(42, 7), "/documents/42/recipients/7/revoke");
+  assert.equal(API_ENDPOINTS.DOCUMENTS.RESTORE_RECIPIENT(42, 7), "/documents/42/recipients/7/restore");
   assert.equal(API_ENDPOINTS.KEYS.LIST, "/keys");
   assert.equal(API_ENDPOINTS.KEYS.ME, "/keys/me");
   assert.equal(API_ENDPOINTS.KEYS.GENERATE, "/keys/generate");

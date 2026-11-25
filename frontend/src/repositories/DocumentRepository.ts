@@ -43,6 +43,15 @@ export class DocumentRepository extends BaseRepository {
       API_ENDPOINTS.DOCUMENTS.REVOKE_RECIPIENT(docId, recipientUserId)
     );
   }
+
+  restoreRecipientAccess(
+    docId: number | string,
+    recipientUserId: number | string
+  ): Promise<MessageResponse & { access_status?: string }> {
+    return this.post<MessageResponse & { access_status?: string }>(
+      API_ENDPOINTS.DOCUMENTS.RESTORE_RECIPIENT(docId, recipientUserId)
+    );
+  }
 }
 
 export const documentRepository = new DocumentRepository();

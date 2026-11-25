@@ -14,7 +14,9 @@ export const API_ENDPOINTS = Object.freeze({
     BY_ID: (id: number | string) => `/documents/${id}`,
     DOWNLOAD: (id: number | string) => `/documents/${id}/download`,
     REVOKE_RECIPIENT: (docId: number | string, userId: number | string) =>
-      `/documents/${docId}/recipients/${userId}/revoke`
+      `/documents/${docId}/recipients/${userId}/revoke`,
+    RESTORE_RECIPIENT: (docId: number | string, userId: number | string) =>
+      `/documents/${docId}/recipients/${userId}/restore`
   },
   KEYS: {
     LIST: "/keys",

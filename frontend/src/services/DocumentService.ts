@@ -38,6 +38,13 @@ export class DocumentService {
   ): Promise<MessageResponse & { access_status?: string }> {
     return this.repository.revokeRecipientAccess(docId, recipientUserId);
   }
+
+  restoreRecipientAccess(
+    docId: number | string,
+    recipientUserId: number | string
+  ): Promise<MessageResponse & { access_status?: string }> {
+    return this.repository.restoreRecipientAccess(docId, recipientUserId);
+  }
 }
 
 export const documentService = new DocumentService();
