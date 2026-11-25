@@ -74,22 +74,26 @@ export class EncryptDocumentRequestDTO {
   recipient_key_id: number | null;
   aad: AadMetadataDTO;
   wrap_mode: string;
+  expires_in_hours: number | null;
 
   constructor({
     document = null,
     recipient_key_id = null,
     aad = new AadMetadataDTO(),
-    wrap_mode = "XOR_AAD"
+    wrap_mode = "XOR_AAD",
+    expires_in_hours = null
   }: {
     document?: File | null;
     recipient_key_id?: number | null;
     aad?: AadMetadataDTO | { classification?: string; origin_department?: string; document_version?: string };
     wrap_mode?: string;
+    expires_in_hours?: number | null;
   } = {}) {
     this.document = document;
     this.recipient_key_id = recipient_key_id;
     this.aad = aad instanceof AadMetadataDTO ? aad : new AadMetadataDTO(aad);
     this.wrap_mode = wrap_mode || "XOR_AAD";
+    this.expires_in_hours = expires_in_hours ?? null;
   }
 
   toFormData(): FormData {
@@ -106,6 +110,9 @@ export class EncryptDocumentRequestDTO {
         : JSON.stringify(this.aad || {});
     formData.append("aad_json", aadStr);
     formData.append("wrap_mode", this.wrap_mode);
+    if (this.expires_in_hours && this.expires_in_hours > 0) {
+      formData.append("expires_in_hours", String(this.expires_in_hours));
+    }
     return formData;
   }
 }
@@ -247,6 +254,7 @@ export class DocumentResponseDTO {
   sender_full_name: string;
   classification: string;
   status: string;
+  expires_at: string | null;
   created_at: string | null;
   recipients: DocumentRecipientDTO[];
   encryption_metadata: EncryptionMetadataDTO;
@@ -268,6 +276,7 @@ export class DocumentResponseDTO {
     this.sender_full_name = asString(data.sender_full_name ?? data.sender_username);
     this.classification = asString(data.classification, "CONFIDENTIAL");
     this.status = asString(data.status, "ENCRYPTED");
+    this.expires_at = asNullableString(data.expires_at);
     this.created_at = asNullableString(data.created_at);
     this.recipients = Array.isArray(data.recipients)
       ? data.recipients.map((r) => (r instanceof DocumentRecipientDTO ? r : new DocumentRecipientDTO(asRecord(r))))

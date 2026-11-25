@@ -82,6 +82,47 @@ def decrypt_document_route():
                     "detail": "Akses ditolak: Anda bukan penerima yang berwenang untuk mendekripsi dokumen ini."
                 }), 403
 
+            if (
+                recipient_entry
+                and recipient_entry.access_status == "REVOKED"
+                and doc_record.sender_id != g.current_user["id"]
+                and not is_admin_user(g.current_user)
+            ):
+                AuditService.record_event(
+                    db=db,
+                    user_id=g.current_user["id"],
+                    actor_identity=f"{g.current_user['username']} ({g.current_user['role']})",
+                    action_type="ACCESS_DENIED_REVOKED",
+                    ip_address=client_ip,
+                    document_id=doc_record.id,
+                    document_name=doc_record.original_filename,
+                    status="FAILURE",
+                    metadata={"reason": "Recipient access was revoked by sender or administrator"},
+                )
+                return jsonify({
+                    "detail": "Akses ditolak: Hak akses Anda terhadap dokumen ini telah dicabut."
+                }), 403
+
+            if (
+                doc_record.expires_at
+                and datetime.now(timezone.utc).replace(tzinfo=None) > doc_record.expires_at
+                and not is_admin_user(g.current_user)
+            ):
+                AuditService.record_event(
+                    db=db,
+                    user_id=g.current_user["id"],
+                    actor_identity=f"{g.current_user['username']} ({g.current_user['role']})",
+                    action_type="ACCESS_DENIED_EXPIRED",
+                    ip_address=client_ip,
+                    document_id=doc_record.id,
+                    document_name=doc_record.original_filename,
+                    status="FAILURE",
+                    metadata={"expires_at": doc_record.expires_at.isoformat()},
+                )
+                return jsonify({
+                    "detail": "Akses ditolak: Masa berlaku dokumen ini telah berakhir."
+                }), 403
+
             storage_path = Path(doc_record.storage_path)
             if not storage_path.exists():
                 return jsonify({"detail": "File kontainer .enc fisik tidak ditemukan pada penyimpanan aman."}), 404

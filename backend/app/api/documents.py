@@ -1,8 +1,9 @@
+from datetime import datetime, timezone
 from pathlib import Path
 from flask import Blueprint, request, jsonify, send_file, g
 
 from ..database import get_db_session
-from ..models import Document
+from ..models import Document, DocumentRecipient
 from ..repositories import DocumentRepository
 from ..core.permissions import jwt_required, is_admin_user
 from ..services.AuditService import AuditService
@@ -48,6 +49,7 @@ def _serialize_document(doc: Document, include_details: bool = False) -> dict:
         "sender_full_name": doc.sender.full_name if doc.sender else None,
         "classification": doc.classification,
         "status": doc.status,
+        "expires_at": doc.expires_at.isoformat() if doc.expires_at else None,
         "created_at": doc.created_at.isoformat() if doc.created_at else None,
         "recipients": recipients_list,
         "aad_json": meta.aad_json if meta else {},
@@ -85,7 +87,12 @@ def _user_can_access_doc(doc: Document, current_user: dict) -> bool:
         return True
     if doc.sender_id == current_user["id"]:
         return True
-    return any(r.recipient_user_id == current_user["id"] for r in doc.recipients)
+    if doc.expires_at and datetime.now(timezone.utc).replace(tzinfo=None) > doc.expires_at:
+        return False
+    return any(
+        r.recipient_user_id == current_user["id"] and r.access_status != "REVOKED"
+        for r in doc.recipients
+    )
 
 
 @documents_bp.route("/api/documents", methods=["GET"])
@@ -224,5 +231,47 @@ def delete_document(doc_id: int):
             metadata={"doc_uid": doc.doc_uid},
         )
         return jsonify({"message": f"Dokumen {doc.original_filename} berhasil dihapus dari repositori aktif."})
+    finally:
+        db.close()
+
+
+@documents_bp.route("/api/documents/<int:doc_id>/recipients/<int:recipient_user_id>/revoke", methods=["POST"])
+@documents_bp.route("/api/v1/documents/<int:doc_id>/recipients/<int:recipient_user_id>/revoke", methods=["POST"])
+@jwt_required()
+def revoke_recipient_access(doc_id: int, recipient_user_id: int):
+    db = get_db_session()
+    try:
+        doc = db.query(Document).filter(Document.id == doc_id, Document.is_deleted == False).first()
+        if not doc:
+            return jsonify({"detail": "Dokumen tidak ditemukan."}), 404
+        if doc.sender_id != g.current_user["id"] and not is_admin_user(g.current_user):
+            return jsonify({"detail": "Hanya pengirim dokumen atau Administrator yang dapat mencabut akses."}), 403
+
+        recip = db.query(DocumentRecipient).filter(
+            DocumentRecipient.document_id == doc.id,
+            DocumentRecipient.recipient_user_id == recipient_user_id,
+        ).first()
+        if not recip:
+            return jsonify({"detail": "Penerima dokumen tidak ditemukan."}), 404
+
+        recip.access_status = "REVOKED"
+        db.commit()
+
+        AuditService.record_event(
+            db=db,
+            user_id=g.current_user["id"],
+            actor_identity=f"{g.current_user['username']} ({g.current_user['role']})",
+            action_type="ACCESS_REVOKED",
+            ip_address=request.remote_addr or "127.0.0.1",
+            document_id=doc.id,
+            document_name=doc.original_filename,
+            status="SUCCESS",
+            metadata={
+                "doc_uid": doc.doc_uid,
+                "revoked_user_id": recipient_user_id,
+                "revoked_username": recip.recipient.username if recip.recipient else None,
+            },
+        )
+        return jsonify({"message": "Hak akses penerima berhasil dicabut.", "access_status": "REVOKED"})
     finally:
         db.close()

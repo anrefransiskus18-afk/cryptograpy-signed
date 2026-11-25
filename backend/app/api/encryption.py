@@ -127,6 +127,13 @@ def encrypt_document_route():
         ct_hash = SHA256.new(enc_container).hexdigest()
 
         try:
+            from datetime import datetime, timedelta, timezone
+
+            expires_at = (
+                datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=req_dto.expires_in_hours)
+                if req_dto.expires_in_hours
+                else None
+            )
             doc_record = Document(
                 doc_uid=doc_uid,
                 original_filename=safe_orig_name,
@@ -143,6 +150,7 @@ def encrypt_document_route():
                 classification=classification,
                 status="ENCRYPTED",
                 is_deleted=False,
+                expires_at=expires_at,
             )
             db.add(doc_record)
             db.flush()  # dapatkan doc_record.id tanpa commit terpisah

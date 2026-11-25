@@ -18,6 +18,7 @@ test("Contract: API_ENDPOINTS match canonical /api/v1 backend routes", () => {
   assert.equal(API_ENDPOINTS.DOCUMENTS.BASE, "/documents");
   assert.equal(API_ENDPOINTS.DOCUMENTS.BY_ID(42), "/documents/42");
   assert.equal(API_ENDPOINTS.DOCUMENTS.DOWNLOAD(42), "/documents/42/download");
+  assert.equal(API_ENDPOINTS.DOCUMENTS.REVOKE_RECIPIENT(42, 7), "/documents/42/recipients/7/revoke");
   assert.equal(API_ENDPOINTS.KEYS.LIST, "/keys");
   assert.equal(API_ENDPOINTS.KEYS.ME, "/keys/me");
   assert.equal(API_ENDPOINTS.KEYS.GENERATE, "/keys/generate");
@@ -55,6 +56,7 @@ test("Contract: EncryptDocumentRequestDTO serializes wrap_mode and AAD JSON dete
   const req = new EncryptDocumentRequestDTO({
     recipient_key_id: 9,
     wrap_mode: "AES_GCM_KW",
+    expires_in_hours: 24,
     aad: new AadMetadataDTO({
       classification: "TOP_SECRET",
       origin_department: "Security",
@@ -64,6 +66,7 @@ test("Contract: EncryptDocumentRequestDTO serializes wrap_mode and AAD JSON dete
   const fd = req.toFormData();
   assert.equal(fd.get("recipient_key_id"), "9");
   assert.equal(fd.get("wrap_mode"), "AES_GCM_KW");
+  assert.equal(fd.get("expires_in_hours"), "24");
   assert.equal(
     fd.get("aad_json"),
     JSON.stringify({

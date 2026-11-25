@@ -127,6 +127,7 @@ class Document(Base):
     classification = Column(String(40), default="CONFIDENTIAL", index=True)
     status = Column(String(30), default="ENCRYPTED", index=True)  # ENCRYPTED, DECRYPTED, DELETED
     is_deleted = Column(Boolean, default=False, index=True)
+    expires_at = Column(DateTime, nullable=True, index=True)
     created_at = Column(DateTime, default=_utc_now, index=True)
 
     sender = relationship("User", back_populates="sent_documents", foreign_keys=[sender_id])

@@ -115,7 +115,7 @@
 
       <AlertBanner v-if="clearanceWarning" variant="warning" :message="clearanceWarning" />
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <BaseInput
           v-model="encryptReq.aad.origin_department"
           label="Unit / Departemen Pengirim"
@@ -128,6 +128,17 @@
         >
           <option value="XOR_AAD">Standar Cepat (Format HC01 — Direkomendasikan)</option>
           <option value="AES_GCM_KW">Perlindungan Lapis Ganda (Format HC02)</option>
+        </BaseSelect>
+
+        <BaseSelect
+          :modelValue="encryptReq.expires_in_hours ? String(encryptReq.expires_in_hours) : ''"
+          label="Masa Berlaku Akses"
+          @update:modelValue="encryptReq.expires_in_hours = $event ? Number($event) : null"
+        >
+          <option value="">Tanpa Batas Waktu</option>
+          <option value="24">24 Jam</option>
+          <option value="168">7 Hari</option>
+          <option value="720">30 Hari</option>
         </BaseSelect>
       </div>
 

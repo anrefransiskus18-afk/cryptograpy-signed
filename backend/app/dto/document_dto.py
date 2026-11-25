@@ -35,6 +35,11 @@ class EncryptDocumentRequestDTO:
 
         self.wrap_mode = str(data.get("wrap_mode") or "XOR_AAD").strip().upper()
         self.response_mode = str(data.get("response_mode") or "").strip().lower()
+        try:
+            hrs = int(data["expires_in_hours"]) if data.get("expires_in_hours") else None
+            self.expires_in_hours = hrs if (hrs and hrs > 0) else None
+        except (ValueError, TypeError):
+            self.expires_in_hours = None
         self.aad_raw = data.get("aad_json", "{}")
         self.aad_valid = True
         if isinstance(self.aad_raw, dict):
@@ -142,6 +147,7 @@ class DocumentResponseDTO:
         self.sender_full_name = data.get("sender_full_name")
         self.classification = str(data.get("classification") or "INTERNAL")
         self.status = str(data.get("status") or "ENCRYPTED")
+        self.expires_at = data.get("expires_at")
         self.created_at = data.get("created_at")
         self.recipients = data.get("recipients") or []
         self.aad_json = data.get("aad_json") or {}

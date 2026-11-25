@@ -196,6 +196,41 @@
             {{ selectedDocDetail.encryption_metadata?.encryption_duration_ms ?? "—" }} milidetik
           </span>
         </div>
+        <div v-if="selectedDocDetail.expires_at" class="flex justify-between py-1.5 border-b border-slate-100">
+          <span class="text-slate-500">Masa Berlaku Akses</span>
+          <span class="font-mono text-amber-700 font-semibold">
+            {{ formatTime(selectedDocDetail.expires_at) }}
+          </span>
+        </div>
+        <div
+          v-if="selectedDocDetail.recipients && selectedDocDetail.recipients.length > 0"
+          class="pt-1 space-y-1.5"
+        >
+          <span class="text-slate-500 font-semibold block">Penerima &amp; Status Akses</span>
+          <div
+            v-for="r in selectedDocDetail.recipients"
+            :key="r.recipient_user_id ?? r.recipient_key_fingerprint"
+            class="flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2"
+          >
+            <div class="min-w-0">
+              <div class="font-semibold text-slate-800 truncate">{{ r.recipient_full_name }}</div>
+              <div class="text-[11px] text-slate-400">
+                Status:
+                <span :class="r.access_status === 'REVOKED' ? 'text-rose-600 font-semibold' : 'text-emerald-700 font-semibold'">
+                  {{ r.access_status === "REVOKED" ? "DICABUT" : r.access_status }}
+                </span>
+              </div>
+            </div>
+            <button
+              v-if="canDeleteDoc(selectedDocDetail) && r.recipient_user_id && r.access_status !== 'REVOKED'"
+              type="button"
+              @click="revokeRecipient(selectedDocDetail, r.recipient_user_id)"
+              class="h-7 px-2.5 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-[11px] shrink-0 cursor-pointer"
+            >
+              Cabut Akses
+            </button>
+          </div>
+        </div>
         <MonoCopyBox
           label="Sidik Jari Keaslian Dokumen Asli (SHA-256)"
           :value="selectedDocDetail.sha256_plaintext_hash"
@@ -358,6 +393,17 @@ async function executeDelete() {
     await loadDocuments();
   } catch (err) {
     toast.show(extractApiError(err, "Gagal menghapus dokumen."), "error");
+  }
+}
+
+async function revokeRecipient(doc: DocumentResponseDTO, recipientUserId: number) {
+  try {
+    await documentService.revokeRecipientAccess(doc.id, recipientUserId);
+    toast.show("Hak akses penerima berhasil dicabut dan dicatat di Audit Log.", "success");
+    selectedDocDetail.value = await documentService.getById(doc.id);
+    await loadDocuments();
+  } catch (err) {
+    toast.show(extractApiError(err, "Gagal mencabut akses penerima."), "error");
   }
 }
 

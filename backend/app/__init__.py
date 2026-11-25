@@ -55,6 +55,11 @@ def _ensure_schema_columns():
             if "document_id" not in cols:
                 conn.execute(text("ALTER TABLE audit_logs ADD COLUMN document_id INTEGER NULL"))
             conn.commit()
+        if "documents" in existing_tables:
+            cols = {c["name"] for c in insp.get_columns("documents")}
+            if "expires_at" not in cols:
+                conn.execute(text("ALTER TABLE documents ADD COLUMN expires_at DATETIME NULL"))
+            conn.commit()
 
 
 def init_database_and_seed():
